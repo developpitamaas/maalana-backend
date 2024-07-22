@@ -1,5 +1,7 @@
 const express = require("express");
 const cors = require("cors");
+const bodyParser = require('body-parser');
+
 const User = require("./routes/user");
 const Product = require("./routes/product");
 const Category = require("./routes/category");
@@ -16,9 +18,11 @@ const cookieParser = require("cookie-parser");
 const Banner = require("./routes/offer");
 const AdminLogin = require("./routes/adminRoutes");
 const ProductAdd = require("./routes/productRoutes");
+const Statistics = require("./routes/statistics");
 
 // define app using express
 const app = express();
+app.use(bodyParser.json());
 
 // middleware
 app.use(express.json());
@@ -42,7 +46,8 @@ app.use(
   SecondOrder,
   Banner,
   AdminLogin,
-  ProductAdd
+  ProductAdd,
+  Statistics
 );
 
 // default route
