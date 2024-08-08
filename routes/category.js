@@ -13,10 +13,10 @@ Category.route("/get-all-categories").get(Data.GetAllCategories)
 Category.route("/get-single-category/:id").get(Data.GetSingleCategory)
 
 // update category
-Category.route("/update-category/:id").put(auth.IsAuthenticateUser,auth.authorizeRole("admin") ,Data.UpdateCategory)
+Category.route("/update-category/:id").put(Data.UpdateCategory)
 
 // delete category
-Category.route("/delete-category/:id").delete(auth.IsAuthenticateUser,auth.authorizeRole("admin") ,Data.DeleteCategory)
+Category.route("/delete-category/:id").delete(Data.DeleteCategory)
 
 // get all products by category
 Category.route("/get-all-products-by-category/:id").get(Data.GetAllProductsByCategory)

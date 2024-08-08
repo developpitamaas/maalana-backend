@@ -62,11 +62,15 @@ const UpdateCategory = Trycatch(async (req, res, next) => {
     runValidators: true,
     useFindAndModify: false,
   });
+  
+  if (!category) {
+    return res.status(404).json({
+      success: false,
+      message: "Category not found",
+    });
+  }
   cache.del("categories");
   cache.del("totalCategories");
- 
-
-
   res.status(200).json({
     success: true,
     category,
