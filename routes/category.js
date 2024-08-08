@@ -4,7 +4,7 @@ const Data = require("../controllers/Product/category");
 const auth = require("../middleware/Auth");
 
 // create product
-Category.route("/create-category").post(auth.IsAuthenticateUser,auth.authorizeRole("admin") ,Data.CreateCategory)
+Category.route("/create-category").post(Data.CreateCategory)
 
 // get all categories
 Category.route("/get-all-categories").get(Data.GetAllCategories)            

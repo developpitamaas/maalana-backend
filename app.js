@@ -19,6 +19,7 @@ const Banner = require("./routes/offer");
 const AdminLogin = require("./routes/adminRoutes");
 const ProductAdd = require("./routes/productRoutes");
 const Statistics = require("./routes/statistics");
+const Categories = require("./model/Product/Categories");
 
 // define app using express
 const app = express();
@@ -47,7 +48,8 @@ app.use(
   Banner,
   AdminLogin,
   ProductAdd,
-  Statistics
+  Statistics,
+  Categories
 );
 
 // default route
