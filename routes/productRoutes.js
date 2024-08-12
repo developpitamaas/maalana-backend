@@ -17,4 +17,7 @@ router.put('/admin/update-product/:id', productController.updateProduct);
 // route to delete product by ID
 router.delete('/admin/delete-product/:id', productController.deleteProduct);
 
+// route to get category product
+router.get('/get-category-product/:category', productController.getProductByCategory);
+
 module.exports = router;

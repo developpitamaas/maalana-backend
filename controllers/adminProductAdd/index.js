@@ -62,23 +62,23 @@ const updateProduct = async (req, res) => {
       res.status(500).json({ message: 'Server error', error });
     }
   };
-  // const deleteProduct = async (req, res) => {
-  //   console.log("req.params.id", req.params.id);
-  //   // try {
-  //   //   const product = await Product.findByIdAndDelete(req.params.id);
-  //   //   if (!product) {
-  //   //     return res.status(404).json({ message: 'Product not found' });
-  //   //   }
-  //   //   res.status(200).json({ message: 'Product deleted successfully', product });
-  //   // } catch (error) {
-  //   //   res.status(500).json({ message: 'Server error', error });
-  //   // }
-  // };
+
+  // get the product by category 
+
+  const getProductByCategory = async (req, res) => {
+    try {
+      const products = await Product.find({ category: req.params.category });
+      res.status(200).json(products);
+    } catch (error) {
+      res.status(500).json({ message: 'Server error', error });
+    }
+  };
 
 module.exports = { 
     addProduct, 
     getAllProducts,
     getProductById,
     updateProduct,
-    deleteProduct
+    deleteProduct,
+    getProductByCategory
  };
