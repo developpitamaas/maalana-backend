@@ -1,4 +1,6 @@
 const Product = require('../../model/adminProductAdd/index'); 
+const BestSellers = require('../../model/adminProductAdd/bestseller')
+
 
 const addProduct = async (req, res) => {
   try {
@@ -74,11 +76,39 @@ const updateProduct = async (req, res) => {
     }
   };
 
+  const addBestSellerProduct = async (req, res) => {
+    try {
+      const productData = req.body;
+      const newProduct = new BestSellers(productData);
+      await newProduct.save();
+  
+      res.status(200).json({ message: 'Product added successfully', product: newProduct });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Server error', error });
+    }
+  };
+
+  const getBestSellerProduct = async (req, res) => {
+    try {
+      const products = await BestSellers.find();
+      res.status(200).json({
+        success: true,
+        data:products,
+        message: 'Products fetched successfully',
+      });
+    } catch (error) {
+      res.status(500).json({ message: 'Server error', error });
+    }
+  };
+
 module.exports = { 
     addProduct, 
     getAllProducts,
     getProductById,
     updateProduct,
     deleteProduct,
-    getProductByCategory
+    getProductByCategory,
+    addBestSellerProduct,
+    getBestSellerProduct
  };

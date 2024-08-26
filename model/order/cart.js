@@ -26,6 +26,27 @@ const cartSchema = new mongoose.Schema({
       CoupanCode: {
         type: String,
       },
+      coupanDiscount: {
+        type: Number,
+        default: 0,
+      },
+      CoupanValue: {
+        type: Number,
+        default: 0,
+      },
+      totalAmount: {
+        type: Number,
+        default: 0,
+      },
+      totalAmountAfterDiscount: {
+        type: Number,
+        default: 0,
+      },
+      status: {
+        type: String,
+        enum: ['Pending', 'Shipped', 'Delivered', 'Cancelled'],
+        default: 'Pending',
+      },
     },
   ],
 });

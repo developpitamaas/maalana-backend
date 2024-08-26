@@ -64,6 +64,16 @@ const getCart = TryCatch(async (req, res, next) => {
   res.status(200).json({ success: true, cart, message: "Cart fetched successfully" });
 });
 
+// get all cart product by user id
+
+const getAllCartByUser = TryCatch(async (req, res, next) => {
+  const cart = await Cart.find({ userId: req.params.id }).populate("items.productId");
+  if (!cart) {
+    return res.status(404).json({ success: false, message: "Cart not found" });
+  }
+  res.status(200).json({ success: true, cart, message: "Cart fetched successfully" });
+});
+
 // get all cart product 
 
 const getAllCart = TryCatch(async (req, res, next) => {
@@ -72,11 +82,46 @@ const getAllCart = TryCatch(async (req, res, next) => {
     return res.status(404).json({ success: false, message: "Cart not found" });
   }
   res.status(200).json({ success: true, cart, message: "Cart fetched successfully" });
-})
+});
+
+const updateCart = TryCatch(async (req, res, next) => {
+  const { productId, quantity, userId } = req.body;
+console.log(productId);
+  if (!productId || !quantity || !userId) {
+    return res.status(400).json({ success: false, message: 'Product ID, quantity, and user ID are required.' });
+  }
+
+  // Find the cart for the user
+  const cart = await Cart.findOne({ userId });
+  if (!cart) {
+    return res.status(404).json({ success: false, message: 'Cart not found.' });
+  }
+
+  // Find the item in the cart
+  // const itemIndex = cart.items.findIndex(item =>console.log(String(item.productId)));
+
+  const itemIndex = cart.items.findIndex(item => String(item.productId) === String(productId));
+// console.log('itemIndex', itemIndex);
+  // Check if the item exists in the cart
+  if (itemIndex === -1) {
+    return res.status(404).json({ success: false, message: 'Product not found in cart.' });
+  }
+
+  // Update the quantity of the item
+  cart.items[itemIndex].quantity = quantity;
+
+  // Save the cart
+  await cart.save();
+
+  res.status(200).json({ success: true, message: 'Product quantity updated successfully.', cart });
+});
+
 
 // export
 module.exports = {
   addToCart,
   getCart,
-  getAllCart
+  getAllCart, 
+  updateCart,
+  getAllCartByUser
 };

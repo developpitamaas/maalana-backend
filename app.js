@@ -20,6 +20,7 @@ const AdminLogin = require("./routes/adminRoutes");
 const ProductAdd = require("./routes/productRoutes");
 const Statistics = require("./routes/statistics");
 const Categories = require("./model/Product/Categories");
+const BestSellerProduct = require("./routes/BestSellerProduct");
 
 // define app using express
 const app = express();
@@ -49,7 +50,8 @@ app.use(
   AdminLogin,
   ProductAdd,
   Statistics,
-  Categories
+  Categories,
+  BestSellerProduct
 );
 
 // default route

@@ -15,14 +15,14 @@ Address.route("/get-my-billing-address").get(auth.IsAuthenticateUser ,BillingDat
 Address.route("/get-my-shiped-address/:id").get(ShipedData.GetMyShipedAddress)
 
 // update billing address
-Address.route("/update-billing-address/:id").put(auth.IsAuthenticateUser ,BillingData.UpdateBillingAddress)
+Address.route("/update-billing-address/:id").put(BillingData.UpdateBillingAddress)
 // update shiped address
-Address.route("/update-shiped-address/:id").put(auth.IsAuthenticateUser ,ShipedData.UpdateShipedAddress)
+Address.route("/update-shiped-address/:id").put(ShipedData.UpdateShipedAddress)
 
 // delete billing address
 Address.route("/delete-billing-address/:id").delete(auth.IsAuthenticateUser ,BillingData.DeleteBillingAddress)
 // delete shiped address
-Address.route("/delete-shiped-address/:id").delete(auth.IsAuthenticateUser ,ShipedData.DeleteShipedAddress)
+Address.route("/delete-shiped-address/:id").delete(ShipedData.DeleteShipedAddress)
 
 // get billing address by id
 Address.route("/get-billing-address-by-id/:id").get(auth.IsAuthenticateUser ,BillingData.GetBillingAddressById)

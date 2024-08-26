@@ -20,4 +20,10 @@ router.delete('/admin/delete-product/:id', productController.deleteProduct);
 // route to get category product
 router.get('/get-category-product/:category', productController.getProductByCategory);
 
+// route to add best seller product
+router.post('/admin/add-best-seller-product', productController.addBestSellerProduct);
+
+// route to get best seller product
+router.get('/admin/get-best-seller-product', productController.getBestSellerProduct);
+
 module.exports = router;

@@ -21,7 +21,9 @@ const GetMyShipedAddress = TryCatch(async (req, res, next) => {
         success: true,
         shipedaddress
     });
-})
+});
+
+
 
 // update shiped address
 const UpdateShipedAddress = TryCatch(async (req, res, next) => {
