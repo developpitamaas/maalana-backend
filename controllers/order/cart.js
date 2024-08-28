@@ -4,7 +4,7 @@ const Product = require("../../model/Product/product");
 
 const addToCart = TryCatch(async (req, res, next) => {
   const { productId, quantity, shippingPrice, CoupanCode, id } = req.body;
-console.log(req.body);
+  console.log(req.body);
   if (!productId || !quantity) {
     return res.status(400).json({ success: false, message: 'Product ID and quantity are required.' });
   }
@@ -54,7 +54,7 @@ console.log(req.body);
   });
 });
 
- // get cart product by user id 
+// get cart product by user id 
 
 const getCart = TryCatch(async (req, res, next) => {
   const cart = await Cart.findOne({ userId: req.params.id }).populate("items.productId");
@@ -68,10 +68,22 @@ const getCart = TryCatch(async (req, res, next) => {
 
 const getAllCartByUser = TryCatch(async (req, res, next) => {
   const cart = await Cart.find({ userId: req.params.id }).populate("items.productId");
-  if (!cart) {
+  if (!cart || cart.length === 0) {
     return res.status(404).json({ success: false, message: "Cart not found" });
   }
-  res.status(200).json({ success: true, cart, message: "Cart fetched successfully" });
+
+  // Calculate the total number of items based on the quantity
+  const numberOfItems = cart.reduce((total, cartItem) => {
+    const itemCount = cartItem.items.reduce((sum, item) => sum + item.quantity, 0);
+    return total + itemCount;
+  }, 0);
+
+  res.status(200).json({
+    success: true,
+    cart,
+    numberOfItems,
+    message: "Cart fetched successfully"
+  });
 });
 
 // get all cart product 
@@ -85,35 +97,102 @@ const getAllCart = TryCatch(async (req, res, next) => {
 });
 
 const updateCart = TryCatch(async (req, res, next) => {
-  const { productId, quantity, userId } = req.body;
-console.log(productId);
-  if (!productId || !quantity || !userId) {
-    return res.status(400).json({ success: false, message: 'Product ID, quantity, and user ID are required.' });
+  const { productId, quantity, userId, cartId } = req.body;
+
+  // Validate input
+  if (!productId || !quantity && quantity !== 0 || !userId || !cartId) {
+    return res.status(400).json({ success: false, message: 'Product ID, quantity, user ID, and cart ID are required.' });
   }
 
   // Find the cart for the user
-  const cart = await Cart.findOne({ userId });
+  const cart = await Cart.findOne({ _id: cartId });
   if (!cart) {
     return res.status(404).json({ success: false, message: 'Cart not found.' });
   }
 
-  // Find the item in the cart
-  // const itemIndex = cart.items.findIndex(item =>console.log(String(item.productId)));
-
-  const itemIndex = cart.items.findIndex(item => String(item.productId) === String(productId));
-// console.log('itemIndex', itemIndex);
-  // Check if the item exists in the cart
-  if (itemIndex === -1) {
-    return res.status(404).json({ success: false, message: 'Product not found in cart.' });
+  // Find the product in the cart
+  const product = await Product.findById(productId);
+  if (!product) {
+    return res.status(404).json({ success: false, message: 'Product not found.' });
   }
 
-  // Update the quantity of the item
-  cart.items[itemIndex].quantity = quantity;
+  // Find the item in the cart
+  const itemIndex = cart.items.findIndex(item => item.productId.toString() === productId);
+  if (itemIndex === -1) {
+    return res.status(404).json({ success: false, message: 'Item not found in the cart.' });
+  }
+
+  if (quantity === 0) {
+    // Remove the item from the cart if quantity is 0
+    cart.items.splice(itemIndex, 1);
+  } else {
+    // Update the quantity of the item
+    cart.items[itemIndex].quantity = quantity;
+  }
 
   // Save the cart
   await cart.save();
+  
+  res.status(200).json({ success: true, cart, message: 'Cart updated successfully.' });
+});
 
-  res.status(200).json({ success: true, message: 'Product quantity updated successfully.', cart });
+
+// delete cart all product by user id
+
+const deleteCart = TryCatch(async (req, res, next) => {
+  const { userId } = req.params;
+  console.log(userId);
+
+  // Validate input
+  if (!userId) {
+    return res.status(400).json({ success: false, message: 'User ID is required.' });
+  }
+
+  // Delete all carts for the user
+  const result = await Cart.deleteMany({ userId });
+
+  // Check if any carts were deleted
+  if (result.deletedCount === 0) {
+    return res.status(404).json({ success: false, message: 'No carts found for the user.' });
+  }
+
+  res.status(200).json({ success: true, message: 'All carts deleted successfully.' });
+});
+
+// delete cart product by user id and _id
+
+const deleteCartProduct = TryCatch(async (req, res, next) => {
+  const { userId, productId, cartId } = req.body;
+
+  // Validate input
+  if (!userId || !productId || !cartId) {
+    return res.status(400).json({ success: false, message: 'User ID, product ID, and cart ID are required.' });
+  }
+
+  // Find the cart for the user
+  const cart = await Cart.findOne({ _id: cartId, userId });
+  if (!cart) {
+    return res.status(404).json({ success: false, message: 'Cart not found.' });
+  }
+
+  // Check if cart.items is an array
+  if (!Array.isArray(cart.items)) {
+    return res.status(500).json({ success: false, message: 'Invalid cart structure.' });
+  }
+
+  // Filter out the product from the cart items
+  const initialLength = cart.items.length;
+  cart.items = cart.items.filter(item => item.productId.toString() !== productId.toString());
+
+  // If no items were removed, return a message indicating the product was not found
+  if (cart.items.length === initialLength) {
+    return res.status(404).json({ success: false, message: 'Product not found in cart.' });
+  }
+
+  // Save the updated cart
+  await cart.save();
+
+  res.status(200).json({ success: true, message: 'Product removed from cart successfully.', cart });
 });
 
 
@@ -121,7 +200,9 @@ console.log(productId);
 module.exports = {
   addToCart,
   getCart,
-  getAllCart, 
+  getAllCart,
   updateCart,
-  getAllCartByUser
+  getAllCartByUser,
+  deleteCart,
+  deleteCartProduct
 };

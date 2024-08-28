@@ -17,7 +17,10 @@ Cart.route("/update-cart").put(Data.updateCart);
 // get all cart product by user id
 Cart.route("/get-all-cart-by-user/:id").get(Data.getAllCartByUser);
 
+// delete cart all product by user id
+Cart.route("/delete-cart/:userId").delete(Data.deleteCart);
 
-
+// delete cart product by user id and _id 
+Cart.route("/delete-cart-product").delete(Data.deleteCartProduct);
 // exports
 module.exports = Cart;
