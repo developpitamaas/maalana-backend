@@ -1,9 +1,10 @@
+const axios = require('axios');
 const Cart = require("../../model/order/cart");
 const TryCatch = require("../../middleware/Trycatch");
 const Product = require("../../model/Product/product");
 
 const addToCart = TryCatch(async (req, res, next) => {
-  const { productId, quantity, shippingPrice, CoupanCode, id } = req.body;
+  const { productId, quantity, shippingPrice, CoupanCode, id,  } = req.body;
   console.log(req.body);
   if (!productId || !quantity) {
     return res.status(400).json({ success: false, message: 'Product ID and quantity are required.' });
@@ -47,11 +48,30 @@ const addToCart = TryCatch(async (req, res, next) => {
   // Save the cart
   await cart.save();
 
-  res.status(200).json({
-    success: true,
-    cart,
-    message: "Product added to cart successfully",
-  });
+  let totalQuantity = 0;
+  let totalPrice = 0;
+  
+  try {
+    const response = await axios.get(`http://localhost:8000/api/get-all-cart-by-user/${id}`);
+    const updatedCart = response.data.cart;
+
+    // Calculate total quantity and total price
+    updatedCart.forEach(cartItem => {
+      cartItem.items.forEach(item => {
+        totalQuantity += item.quantity;
+        totalPrice += item.quantity * item.productId.price; // Ensure `item.price` exists
+      });
+    });
+    res.status(200).json({
+      success: true,
+      cart,
+      totalQuantity,
+      totalPrice,
+      message: "Product added to cart successfully",
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Error fetching updated cart." });
+  }
 });
 
 // get cart product by user id 
@@ -96,6 +116,9 @@ const getAllCart = TryCatch(async (req, res, next) => {
   res.status(200).json({ success: true, cart, message: "Cart fetched successfully" });
 });
 
+
+
+// update the product quantity in cart by user id and product id
 const updateCart = TryCatch(async (req, res, next) => {
   const { productId, quantity, userId, cartId } = req.body;
 
@@ -132,8 +155,44 @@ const updateCart = TryCatch(async (req, res, next) => {
 
   // Save the cart
   await cart.save();
-  
-  res.status(200).json({ success: true, cart, message: 'Cart updated successfully.' });
+
+  // Calculate total quantity and total price
+  let totalQuantity = 0;
+  let totalPrice = 0;
+
+  // Fetch the updated cart for the user
+  try {
+    const response = await axios.get(`http://localhost:8000/api/get-all-cart-by-user/${userId}`);
+    const updatedCart = response.data.cart;
+
+    // Calculate total quantity and total price
+    updatedCart.forEach(cartItem => {
+      cartItem.items.forEach(item => {
+        totalQuantity += item.quantity;
+        totalPrice += item.quantity * item.productId.price; // Ensure `item.price` exists
+      });
+    });
+
+
+    // Send success response
+    return res.status(200).json({
+      success: true,
+      cart,
+      totalQuantity,
+      totalPrice,
+      message: 'Cart updated successfully.'
+    });
+
+  } catch (error) {
+    // Handle errors from fetching the updated cart
+    return res.status(500).json({ success: false, message: 'Error fetching updated cart.' });
+  }
+
+  // res.status(200).json({
+  //   success: true,
+  //   cart,
+  //   message: 'Cart updated successfully.'
+  // });
 });
 
 
