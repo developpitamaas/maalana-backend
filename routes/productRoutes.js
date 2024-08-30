@@ -26,4 +26,20 @@ router.post('/admin/add-best-seller-product', productController.addBestSellerPro
 // route to get best seller product
 router.get('/admin/get-best-seller-product', productController.getBestSellerProduct);
 
+// route to get orders
+router.get('/get-orders', productController.getOrders);
+
+// route to create order
+router.post('/create-orders', productController.createOrder);
+
+// route to get all orders
+// router.get('/get-all-orders', productController.getAllOrders);
+
+// send order details email
+router.post('/send-order-details-email', productController.sendEmail);
+
+// update the order status
+router.put('/update-order-status/:id', productController.updateOrderStatus);
+
+// exports
 module.exports = router;

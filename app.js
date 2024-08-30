@@ -21,7 +21,6 @@ const ProductAdd = require("./routes/productRoutes");
 const Statistics = require("./routes/statistics");
 const Categories = require("./model/Product/Categories");
 const BestSellerProduct = require("./routes/BestSellerProduct");
-const Orders = require("./routes/orderRoutes/index");
 
 // define app using express
 const app = express();
@@ -53,11 +52,17 @@ app.use(
   Statistics,
   Categories,
   BestSellerProduct,
-  Orders
 );
 
 // default route
 app.get("/", (req, res) => {
   res.send("Hello World!, Server is running");
 });
+
+app.post('/api/create-order', (req, res) => {
+  console.log('Request received:', req.body);
+  res.status(200).json({ message: 'Order endpoint hit successfully', body: req.body });
+});
+
+
 module.exports = app;
