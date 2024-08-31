@@ -5,6 +5,16 @@ const BestSellers = require('../../model/adminProductAdd/bestseller')
 const Orders = require('../../model/adminProductAdd/orders')
 const Users = require('../../model/User/users')
 
+
+  // Configure Nodemailer transport
+  const transporter = nodemailer.createTransport({
+    service: 'gmail', // Use your email service
+    auth: {
+        user: 'sachingautam6239@gmail.com', // Your email
+        pass: 'nxajuvwkblihqind'  // Your email password or application-specific password
+    }
+  });
+
 const addProduct = async (req, res) => {
   try {
     const productData = req.body;
@@ -137,14 +147,6 @@ const updateProduct = async (req, res) => {
       res.status(500).json({ message: 'Server error', error });
     }
   };
-
-  const transporter = nodemailer.createTransport({
-    service: 'gmail', // or any other email service
-    auth: {
-      user: 'vaibhavrathorema@gmail.com',
-      pass: 'rsjm bgsh rcyt jcux'
-    }
-  });
 
   const updateOrderStatus = async (req, res) => {
     try {
@@ -369,8 +371,6 @@ const updateProduct = async (req, res) => {
       res.status(500).json({ message: 'Failed to send order details', error });
     }
   };
-
-
 
 module.exports = { 
     addProduct, 
