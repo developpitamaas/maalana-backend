@@ -33,11 +33,77 @@ const RegisterUser = Trycatch(async (req, res, next) => {
   // remove cache
   cache.del("users");
   cache.del("totalUsers");
+
+  const currentYear = new Date().getFullYear();
+  const yearRange = `${currentYear}-${currentYear + 1}`;
+
+  // HTML Email Template with Dynamic Content
+  const emailTemplate = `
+   <!DOCTYPE html>
+   <html lang="en">
+   <head>
+       <meta charset="UTF-8">
+       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+       <title>Thank You For Registering</title>
+       <style>
+           body {
+               font-family: Arial, sans-serif;
+               max-width: 600px;
+               margin: 0 auto;
+               padding: 20px;
+               background-color: #ffffff;
+               color: #333333;
+               line-height: 1.6;
+           }
+           .logo {
+               max-width: 200px;
+               margin-bottom: 20px;
+           }
+           h1 {
+               color: #9ACA3C;
+               font-size: 36px;
+               margin-bottom: 20px;
+           }
+           ul {
+               padding-left: 20px;
+           }
+           .website {
+               font-weight: bold;
+               margin: 20px 0;
+           }
+           .footer {
+               margin-top: 30px;
+               font-size: 14px;
+               color: #666666;
+           }
+       </style>
+   </head>
+   <body>
+       <img src="https://dummyimage.com/200x100/000/fff&text=Maalana+Logo" alt="Maalana Logo" class="logo">
+       <h1>Thank You For Registering</h1>
+       <p>Hi ${user.name},</p>
+       <p>Thank you for registering with us! We're excited to have you as part of our community. Your account has been
+           successfully created, and you're now all set to start exploring our Maalana Products. To get started, you might
+           want to:</p>
+       <ul>
+           <li>Complete your profile by logging in to your account.</li>
+           <li>Check out our latest offerings and exclusive deals.</li>
+           <li>Explore our resources to make the most of your new account.</li>
+       </ul>
+       <p class="website">www.maalana.com</p>
+       <p>If you have any questions or need assistance, don't hesitate to reach out to our support team at [Contact
+           Information]. We're here to help!</p>
+       <p>Thanks again for joining us. We can't wait for you to dive in!</p>
+       <p class="footer">©${yearRange} MAAlana Foods All Rights Reserved</p>
+   </body>
+   </html>`;
+
   //   send mail
   Mail(
     user.email,
-    "Registered Successfully",
-    "You have been registered successfully. Please login to your account. Thank you!"
+    `Welcome to Maalana, ${user.name}! 🎉 Your Journey Starts Here!`,
+    emailTemplate,
+    true
   ),
     res.status(200).json({
       success: true,
@@ -320,6 +386,7 @@ const verifyOtp = Trycatch(async (req, res, next) => {
   }
 
   // Check if the OTP is correct
+  console.log(otpEntry.otp, otp);
   if (otpEntry.otp !== otp) {
     return res.status(400).json({
       success: false,
