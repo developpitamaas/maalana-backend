@@ -101,7 +101,7 @@ const RegisterUser = Trycatch(async (req, res, next) => {
   //   send mail
   Mail(
     user.email,
-    `Welcome to Maalana, ${user.name}! 🎉 Your Journey Starts Here!`,
+    `Welcome to Maalana, ${user.firstName} ${user.lastName}! 🎉 Your Journey Starts Here!`,
     emailTemplate,
     true
   ),
