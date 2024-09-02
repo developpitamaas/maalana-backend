@@ -52,7 +52,7 @@ const addToCart = TryCatch(async (req, res, next) => {
   let totalPrice = 0;
   
   try {
-    const response = await axios.get(`http://localhost:8000/api/get-all-cart-by-user/${id}`);
+    const response = await axios.get(`http://maalana-backend.onrender.com/api/get-all-cart-by-user/${id}`);
     const updatedCart = response.data.cart;
 
     // Calculate total quantity and total price
@@ -162,7 +162,7 @@ const updateCart = TryCatch(async (req, res, next) => {
 
   // Fetch the updated cart for the user
   try {
-    const response = await axios.get(`http://localhost:8000/api/get-all-cart-by-user/${userId}`);
+    const response = await axios.get(`http://maalana-backend.onrender.com/api/get-all-cart-by-user/${userId}`);
     const updatedCart = response.data.cart;
 
     // Calculate total quantity and total price
