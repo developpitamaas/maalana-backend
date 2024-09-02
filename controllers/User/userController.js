@@ -2,6 +2,8 @@ const Trycatch = require("../../middleware/Trycatch");
 const User = require("../../model/User/users");
 const sendToken = require("../../utils/userToken");
 const Mail = require("../../utils/sendmail");
+const OTP = require("../../model/otpModel");
+
 const NodeCache = require("node-cache");
 const cache = new NodeCache();
 // Register User
@@ -266,6 +268,76 @@ const ForgotPassword = Trycatch(async (req, res, next) => {
   }
 });
 
+const newForgotPassword = Trycatch(async (req, res, next) => {
+  const { email } = req.body;
+  const user = await User.findOne({ email });
+
+  // Check if user exists
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      message: "User not found",
+    });
+  }
+
+  // Generate a 6-digit OTP
+  const otp = Math.floor(100000 + Math.random() * 900000);
+
+  // Upsert OTP in the database (update if exists, insert if doesn't)
+  const otpEntry = await OTP.findOneAndUpdate(
+    { email }, // Filter by email
+    { otp, createdAt: new Date() }, // Update the OTP and reset the expiration time
+    { upsert: true, new: true, setDefaultsOnInsert: true } // Create a new entry if it doesn't exist
+  );
+
+  // Send OTP to user's email
+  await Mail(
+    email,
+    "Password Reset OTP",
+    `Your OTP for resetting the password is : ${otp}. Please do not share this OTP with anyone.`
+  );
+
+  res.status(200).json({
+    success: true,
+    message: "OTP sent to your email",
+  });
+});
+
+
+// verify otp
+const verifyOtp = Trycatch(async (req, res, next) => {
+  const { email, otp } = req.body;
+
+  // Find the OTP entry for the given email
+  const otpEntry = await OTP.findOne({ email });
+
+  // Check if OTP entry exists
+  if (!otpEntry) {
+    return res.status(404).json({
+      success: false,
+      message: "OTP not found. Please request a new OTP.",
+    });
+  }
+
+  // Check if the OTP is correct
+  if (otpEntry.otp !== otp) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid OTP. Please try again.",
+    });
+  }
+
+  // OTP is valid, proceed with the password reset or other actions
+  res.status(200).json({
+    success: true,
+    message: "OTP verified successfully.",
+  });
+
+  // Optionally, delete the OTP entry after successful verification
+  await OTP.deleteOne({ email });
+});
+
+
 // check otp
 const checkOTP = Trycatch(async (req, res, next) => {
   const { email, OTP } = req.body;
@@ -284,6 +356,7 @@ const checkOTP = Trycatch(async (req, res, next) => {
     message: "OTP verified",
   });
 });
+
 
 // reset password with OTP
 const resetPasswordWithOTP = Trycatch(async (req, res, next) => {
@@ -354,5 +427,7 @@ module.exports = {
   resetPasswordWithOTP,
   sendEmailToAllUsers,
   checkOTP,
-  updateProfileById
+  updateProfileById,
+  newForgotPassword,
+  verifyOtp
 };

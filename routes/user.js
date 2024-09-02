@@ -35,6 +35,12 @@ User.route("/reset-password-with-otp").post(Data.resetPasswordWithOTP)
 // check otp
 User.route("/check-otp").post(Data.checkOTP)
 
+// new forgot password
+User.route("/new-forgot-password").post(Data.newForgotPassword)
+
+// otp verify
+User.route("/otp-verify").post(Data.verifyOtp)
+
 
 
 
