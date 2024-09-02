@@ -79,9 +79,9 @@ const RegisterUser = Trycatch(async (req, res, next) => {
        </style>
    </head>
    <body>
-       <img src="https://dummyimage.com/200x100/000/fff&text=Maalana+Logo" alt="Maalana Logo" class="logo">
+       <img src="https://res.cloudinary.com/dtivafy25/image/upload/v1725260985/logo-1_rqojr8.png" alt="Maalana Logo" class="logo">
        <h1>Thank You For Registering</h1>
-       <p>Hi ${user.name},</p>
+       <p>Hi ${user.firstName} ${user.lastName},</p>
        <p>Thank you for registering with us! We're excited to have you as part of our community. Your account has been
            successfully created, and you're now all set to start exploring our Maalana Products. To get started, you might
            want to:</p>
