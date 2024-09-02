@@ -356,11 +356,78 @@ const newForgotPassword = Trycatch(async (req, res, next) => {
     { upsert: true, new: true, setDefaultsOnInsert: true } // Create a new entry if it doesn't exist
   );
 
+  // email template
+  const emailTemplate = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Password Reset OTP</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                max-width: 600px;
+                margin: 0 auto;
+                padding: 20px;
+                background-color: #ffffff;
+                color: #333333;
+                line-height: 1.6;
+            }
+            .logo {
+                max-width: 200px;
+                margin-bottom: 20px;
+            }
+            h1 {
+                color: #9ACA3C;
+                font-size: 36px;
+                margin-bottom: 20px;
+            }
+            .otp-container {
+                display: flex;
+                justify-content: center;
+                margin: 30px 0;
+            }
+            .otp-digit {
+                background-color: #9ACA3C;
+                color: white;
+                font-size: 24px;
+                font-weight: bold;
+                width: 40px;
+                height: 40px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                margin: 0 5px;
+                border-radius: 5px;
+            }
+            .footer {
+                margin-top: 30px;
+                font-size: 14px;
+                color: #666666;
+            }
+        </style>
+    </head>
+    <body>
+        <img src="https://res.cloudinary.com/dtivafy25/image/upload/v1725260985/logo-1_rqojr8.png" alt="Maalana Logo" class="logo">
+        <h1>Password Reset OTP</h1>
+        <p>Hi ${user.firstName || 'User'} ${user.lastName || ''},</p>
+        <p>We received a request to reset your password. To complete this request, please use the following one-time password (OTP):</p>
+        <div class="otp-container">
+            ${otp.toString().split('').map(digit => `<div class="otp-digit">${digit}</div>`).join('')}
+        </div>
+        <p>Enter this OTP on the password reset page. Please note that this OTP is valid for 10 minutes. If you did not request a password reset, please disregard this email or contact us immediately.</p>
+        <p>For your security: Do not share this OTP with anyone. If you suspect any unauthorized access to your account, let us know right away.</p>
+        <p class="footer">©${new Date().getFullYear()} MAAlana Foods All Rights Reserved</p>
+    </body>
+    </html>`;
+
   // Send OTP to user's email
   await Mail(
     email,
-    "Password Reset OTP",
-    `Your OTP for resetting the password is : ${otp}. Please do not share this OTP with anyone.`
+    "🔐 Your Secure OTP: Unlock Access to Your Account!",
+    emailTemplate,
+    true
   );
 
   res.status(200).json({
@@ -440,10 +507,64 @@ const resetPasswordWithOTP = Trycatch(async (req, res, next) => {
   user.password = newPassword;
   await user.save();
 
+  // HTML Email Template for Password Update
+  const emailTemplate = `
+   <!DOCTYPE html>
+   <html lang="en">
+   <head>
+       <meta charset="UTF-8">
+       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+       <title>Password Updated</title>
+       <style>
+           body {
+               font-family: Arial, sans-serif;
+               max-width: 600px;
+               margin: 0 auto;
+               padding: 20px;
+               background-color: #ffffff;
+               color: #333333;
+               line-height: 1.6;
+           }
+           .logo {
+               max-width: 200px;
+               margin-bottom: 20px;
+           }
+           h1 {
+               color: #9ACA3C;
+               font-size: 36px;
+               margin-bottom: 20px;
+           }
+           .footer {
+               margin-top: 30px;
+               font-size: 14px;
+               color: #666666;
+           }
+       </style>
+   </head>
+   <body>
+       <img src="https://res.cloudinary.com/dtivafy25/image/upload/v1725260985/logo-1_rqojr8.png" alt="Maalana Logo" class="logo">
+       <h1>Password Updated Successfully</h1>
+       <p>Hi ${user.firstName || 'User'} ${user.lastName || ''},</p>
+       <p>We wanted to let you know that your password has been successfully updated.</p>
+       <p>If you did not make this change, please contact us immediately at [Contact Information]. If you have any other questions or need further assistance, feel free to reach out to our support team.</p>
+       <p>For your security: Do not share your new password with anyone. Always use a strong and unique password for your account.</p>
+       <p class="footer">©${new Date().getFullYear()} MAAlana Foods All Rights Reserved</p>
+   </body>
+   </html>`;
+
+  // Send OTP to user's email
+  await Mail(
+    email,
+    "🚀 Great News: Your Password Has Been Updated!",
+    emailTemplate,
+    true
+  );
+
   res.status(200).json({
     success: true,
     message: "Password reset successfully",
   });
+
 });
 
 // Send Email to All Registered Users
