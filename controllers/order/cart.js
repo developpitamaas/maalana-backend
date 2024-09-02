@@ -1,10 +1,11 @@
 const axios = require('axios');
+const mongoose = require('mongoose');
 const Cart = require("../../model/order/cart");
 const TryCatch = require("../../middleware/Trycatch");
 const Product = require("../../model/Product/product");
 
 const addToCart = TryCatch(async (req, res, next) => {
-  const { productId, quantity, shippingPrice, CoupanCode, id,  } = req.body;
+  const { productId, quantity, shippingPrice, CoupanCode, id, } = req.body;
   console.log(req.body);
   if (!productId || !quantity) {
     return res.status(400).json({ success: false, message: 'Product ID and quantity are required.' });
@@ -50,7 +51,7 @@ const addToCart = TryCatch(async (req, res, next) => {
 
   let totalQuantity = 0;
   let totalPrice = 0;
-  
+
   try {
     const response = await axios.get(`http://maalana-backend.onrender.com/api/get-all-cart-by-user/${id}`);
     const updatedCart = response.data.cart;
@@ -219,39 +220,30 @@ const deleteCart = TryCatch(async (req, res, next) => {
 });
 
 // delete cart product by user id and _id
-
 const deleteCartProduct = TryCatch(async (req, res, next) => {
-  const { userId, productId, cartId } = req.body;
+  const { userId, cartId } = req.body;
+  
+  console.log(typeof userId, typeof cartId);
 
   // Validate input
-  if (!userId || !productId || !cartId) {
-    return res.status(400).json({ success: false, message: 'User ID, product ID, and cart ID are required.' });
+  if (!userId || !cartId) {
+    return res.status(400).json({ success: false, message: 'User ID and cart ID are required.' });
   }
 
+  
+
   // Find the cart for the user
-  const cart = await Cart.findOne({ _id: cartId, userId });
+  const cart = await Cart.findOne({ _id: cartId, userId: userId });
+
   if (!cart) {
     return res.status(404).json({ success: false, message: 'Cart not found.' });
   }
 
-  // Check if cart.items is an array
-  if (!Array.isArray(cart.items)) {
-    return res.status(500).json({ success: false, message: 'Invalid cart structure.' });
-  }
+  // Delete the cart
+  await Cart.deleteOne({ _id: cartId });
 
-  // Filter out the product from the cart items
-  const initialLength = cart.items.length;
-  cart.items = cart.items.filter(item => item.productId.toString() !== productId.toString());
-
-  // If no items were removed, return a message indicating the product was not found
-  if (cart.items.length === initialLength) {
-    return res.status(404).json({ success: false, message: 'Product not found in cart.' });
-  }
-
-  // Save the updated cart
-  await cart.save();
-
-  res.status(200).json({ success: true, message: 'Product removed from cart successfully.', cart });
+  // Respond with success
+  res.status(200).json({ success: true, message: 'Cart removed successfully.' });
 });
 
 
