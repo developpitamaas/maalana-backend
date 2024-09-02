@@ -395,9 +395,9 @@ const newForgotPassword = Trycatch(async (req, res, next) => {
                 font-weight: bold;
                 width: 40px;
                 height: 40px;
-                display: flex;
-                justify-content: center;
-                align-items: center;
+                display: flex !important;
+                justify-content: center !important;
+                align-items: center !important;
                 margin: 0 5px;
                 border-radius: 5px;
             }
