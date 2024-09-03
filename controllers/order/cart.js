@@ -88,7 +88,10 @@ const getCart = TryCatch(async (req, res, next) => {
 // get all cart product by user id
 
 const getAllCartByUser = TryCatch(async (req, res, next) => {
-  const cart = await Cart.find({ userId: req.params.id }).populate("items.productId");
+  const cart = await Cart.find({ userId: req.params.id }).populate({
+    path: 'items.productId',
+    select: 'name price images nutritionalInfo ingredients'
+  });
   if (!cart || cart.length === 0) {
     return res.status(404).json({ success: false, message: "Cart not found" });
   }
@@ -241,7 +244,11 @@ const deleteCartProduct = TryCatch(async (req, res, next) => {
   await Cart.deleteOne({ _id: cartId });
 
   // Fetch the updated cart for the user
-  const response = await axios.get(`http://maalana-backend.onrender.com/api/get-all-cart-by-user/${userId}`);
+  const response = await axios.get(`https://maalana-backend.onrender.com/api/get-all-cart-by-user/${userId}`);
+  if (!response) {
+    return res.status(404).json({ success: false, message: 'Cart not found.' });
+  }
+
   const updatedCart = response.data.cart;
 
   // Calculate total quantity and total price

@@ -139,7 +139,7 @@ const updateProduct = async (req, res) => {
       await newOrder.save();
 
       const userId = orderData.user;
-      await axios.delete(`http://localhost:8000/api/delete-cart/${userId}`);
+      await axios.delete(`https://maalana-backend.onrender.com/api/delete-cart/${userId}`);
 
       res.status(200).json({ message: 'Order added successfully and cart cleared', order: newOrder, success: true });
     } catch (error) {
