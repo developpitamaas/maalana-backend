@@ -222,15 +222,13 @@ const deleteCart = TryCatch(async (req, res, next) => {
 // delete cart product by user id and _id
 const deleteCartProduct = TryCatch(async (req, res, next) => {
   const { userId, cartId } = req.body;
-  
+
   console.log(typeof userId, typeof cartId);
 
   // Validate input
   if (!userId || !cartId) {
     return res.status(400).json({ success: false, message: 'User ID and cart ID are required.' });
   }
-
-  
 
   // Find the cart for the user
   const cart = await Cart.findOne({ _id: cartId, userId: userId });
@@ -242,8 +240,29 @@ const deleteCartProduct = TryCatch(async (req, res, next) => {
   // Delete the cart
   await Cart.deleteOne({ _id: cartId });
 
+  // Fetch the updated cart for the user
+  const response = await axios.get(`http://maalana-backend.onrender.com/api/get-all-cart-by-user/${userId}`);
+  const updatedCart = response.data.cart;
+
+  // Calculate total quantity and total price
+  let totalQuantity = 0;
+  let totalPrice = 0;
+
+  updatedCart.forEach(cartItem => {
+    cartItem.items.forEach(item => {
+      totalQuantity += item.quantity;
+      totalPrice += item.quantity * item.productId.price; // Ensure `item.price` exists
+    });
+  });
+
   // Respond with success
-  res.status(200).json({ success: true, message: 'Cart removed successfully.' });
+  res.status(200).json({
+    success: true,
+    message: 'Cart removed successfully.',
+    cart,
+    totalQuantity,
+    totalPrice
+  });
 });
 
 
