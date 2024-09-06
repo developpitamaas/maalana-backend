@@ -7,6 +7,10 @@ const orderSchema = new mongoose.Schema({
         ref: 'User', // Reference to a User model
         required: true
     },
+    userName: {
+        type: String,
+        required: true
+    },
 
     cartItems: [
         {

@@ -136,7 +136,6 @@ const createOrder = async (req, res) => {
   try {
     const orderData = req.body;
     const newOrder = new Orders(orderData);
-    console.log('newOrder', newOrder);
     await newOrder.save();
 
     const userId = orderData.user;
@@ -170,31 +169,164 @@ const updateOrderStatus = async (req, res) => {
 
     switch (req.body.deliveryStatus) {
       case 'Delivered':
-        emailSubject = 'Order Delivered';
-        emailText = `Dear customer, your order with order number ${order.orderNumber} has been successfully delivered. Thank you for shopping with us!`;
+        emailSubject = `🎉 Your Order Has Arrived! 🚚`;
+        emailText = `Dear customer, your order with order number ${order.orderNumber} has been delivered. We hope you enjoy your purchase!`;
         emailHtml = `
-            <p>Dear customer,</p>
-            <p>Your order with order number <strong>${order.orderNumber}</strong> has been successfully delivered.</p>
-            <p>Thank you for shopping with us!</p>
-            <p>Order Details:</p>
-            <ul>
-              ${order.cartItems.map(item => `<li>${item.product}: ${item.quantity} x $${item.price}</li>`).join('')}
-            </ul>
-            <p>Total: $${order.orderSummary.total}</p>
-          `;
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>Order Delivered</title>
+          </head>
+          <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f6f9fc;">
+              <table cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
+                  <tr>
+                      <td style="padding: 20px; text-align: center; background-color: #B9D514;">
+                          <img src="https://res.cloudinary.com/dtivafy25/image/upload/v1725260985/logo-1_rqojr8.png" alt="Maalana" style="max-width: 200px; height: auto;">
+                      </td>
+                  </tr>
+                  <tr>
+                      <td style="padding: 40px 20px; text-align: center;">
+                          <h1 style="color: #333333; font-size: 24px; margin-bottom: 20px;">Order Delivered</h1>
+                          <p style="color: #666666; font-size: 16px; line-height: 1.5; margin-bottom: 20px;">Dear customer,</p>
+                          <p style="color: #666666; font-size: 16px; line-height: 1.5; margin-bottom: 20px;">Great news! Your order (${order.orderNumber}) has been delivered. We hope you are delighted with your purchase!</p>
+                          
+                          <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); overflow: hidden; margin-bottom: 20px;">
+                              <tr>
+                                  <td style="padding: 20px;">
+                                      <h2 style="color: #333333; font-size: 20px; margin-bottom: 15px; text-align: left;">Order Summary</h2>
+                                      <table class="order-table" style="width: 100%; border-collapse: separate; border-spacing: 0;">
+                                          <thead>
+                                              <tr>
+                                                  <th style="padding: 12px 20px; text-align: left; background-color: #f6f9fc; font-weight: bold; text-transform: uppercase; font-size: 14px; border-bottom: 2px solid #B9D514;">Item</th>
+                                                  <th style="padding: 12px 20px; text-align: left; background-color: #f6f9fc; font-weight: bold; text-transform: uppercase; font-size: 14px; border-bottom: 2px solid #B9D514;">Quantity</th>
+                                                  <th style="padding: 12px 20px; text-align: left; background-color: #f6f9fc; font-weight: bold; text-transform: uppercase; font-size: 14px; border-bottom: 2px solid #B9D514;">Price</th>
+                                                  <th style="padding: 12px 20px; text-align: left; background-color: #f6f9fc; font-weight: bold; text-transform: uppercase; font-size: 14px; border-bottom: 2px solid #B9D514;">Total</th>
+                                              </tr>
+                                          </thead>
+                                          <tbody>
+                                              ${order.cartItems.map((item, index) => `
+                                              <tr style='background-color: ${index % 2 === 0 ? '#ffffff' : '#f6f9fc'};'>
+                                                  <td style="padding: 12px 20px; text-align: left;">${item.name}</td>
+                                                  <td style="padding: 12px 20px; text-align: left;">${item.quantity}</td>
+                                                  <td style="padding: 12px 20px; text-align: left;">₹${item.price}</td>
+                                                  <td style="padding: 12px 20px; text-align: left;">₹${item.price * item.quantity}</td>
+                                              </tr>
+                                              `).join('')}
+                                              <tr style="font-weight: bold; background-color: #e9f0f9;">
+                                                  <td colspan="3" style="padding: 12px 20px; text-align: left; border-top: 2px solid #B9D514;">Total</td>
+                                                  <td style="padding: 12px 20px; text-align: left; border-top: 2px solid #B9D514;">₹${order.orderSummary.total}</td>
+                                              </tr>
+                                          </tbody>
+                                      </table>
+                                  </td>
+                              </tr>
+                          </table>
+                          
+                          <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 20px;">
+                              <tr>
+                                  <td>
+                                      <h2 style="color: #333333; font-size: 20px; margin-bottom: 15px;">Shipping Address</h2>
+                                      <p style="color: #666666; font-size: 14px; line-height: 1.5;">
+                                          ${order.address.address}, ${order.address.city}, ${order.address.state}, ${order.address.country} - ${order.address.pincode}
+                                      </p>
+                                  </td>
+                              </tr>
+                          </table>
+                          
+                          <p style="color: #666666; font-size: 16px; line-height: 1.5; margin-bottom: 20px;">Thank you for shopping with us! If you have any questions, feel free to contact our support team.</p>
+                      </td>
+                  </tr>
+                  <tr>
+                      <td style="padding: 20px; text-align: center; background-color: #B9D514; color: #ffffff;">
+                          <p style="margin: 0; font-size: 14px;">© ${new Date().getFullYear()} Maalana. All rights reserved.</p>
+                      </td>
+                  </tr>
+              </table>
+          </body>
+          </html>
+        `;
         break;
       case 'Shipped':
-        emailSubject = 'Order Shipped';
+        emailSubject = `Your Order's On the Way! 🚚 Get Ready for Delivery`;
         emailText = `Dear customer, your order with order number ${order.orderNumber} has been shipped. You can expect to receive it soon.`;
         emailHtml = `
-            <p>Dear customer,</p>
-            <p>Your order with order number <strong>${order.orderNumber}</strong> has been shipped.</p>
-            <p>You can expect to receive it soon.</p>
-            <p>Order Details:</p>
-            <ul>
-              ${order.cartItems.map(item => `<li>${item.product}: ${item.quantity} x $${item.price}</li>`).join('')}
-            </ul>
-            <p>Total: $${order.orderSummary.total}</p>
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>Order Shipped</title>
+          </head>
+          <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f6f9fc;">
+              <table cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
+                  <tr>
+                      <td style="padding: 20px; text-align: center; background-color: #B9D514;">
+                          <img src="https://res.cloudinary.com/dtivafy25/image/upload/v1725260985/logo-1_rqojr8.png" alt="Maalana" style="max-width: 200px; height: auto;">
+                      </td>
+                  </tr>
+                  <tr>
+                      <td style="padding: 40px 20px; text-align: center;">
+                          <h1 style="color: #333333; font-size: 24px; margin-bottom: 20px;">Order Shipped</h1>
+                          <p style="color: #666666; font-size: 16px; line-height: 1.5; margin-bottom: 20px;">Dear customer,</p>
+                          <p style="color: #666666; font-size: 16px; line-height: 1.5; margin-bottom: 20px;">Great news! Your order (${order.orderNumber}) has been shipped and is on its way to you.</p>
+                          
+                          <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); overflow: hidden; margin-bottom: 20px;">
+                              <tr>
+                                  <td style="padding: 20px;">
+                                      <h2 style="color: #333333; font-size: 20px; margin-bottom: 15px; text-align: left;">Order Summary</h2>
+                                      <table class="order-table" style="width: 100%; border-collapse: separate; border-spacing: 0;">
+                                          <thead>
+                                              <tr>
+                                                  <th style="padding: 12px 20px; text-align: left; background-color: #f6f9fc; font-weight: bold; text-transform: uppercase; font-size: 14px; border-bottom: 2px solid #B9D514;">Item</th>
+                                                  <th style="padding: 12px 20px; text-align: left; background-color: #f6f9fc; font-weight: bold; text-transform: uppercase; font-size: 14px; border-bottom: 2px solid #B9D514;">Quantity</th>
+                                                  <th style="padding: 12px 20px; text-align: left; background-color: #f6f9fc; font-weight: bold; text-transform: uppercase; font-size: 14px; border-bottom: 2px solid #B9D514;">Price</th>
+                                                  <th style="padding: 12px 20px; text-align: left; background-color: #f6f9fc; font-weight: bold; text-transform: uppercase; font-size: 14px; border-bottom: 2px solid #B9D514;">Total</th>
+                                              </tr>
+                                          </thead>
+                                          <tbody>
+                                              ${order.cartItems.map(item => `
+                                              <tr style='background-color: ${index % 2 === 0 ? '#ffffff' : '#f6f9fc'};'>
+                                                  <td style="padding: 12px 20px; text-align: left;">${item.name}</td>
+                                                  <td style="padding: 12px 20px; text-align: left;">${item.quantity}</td>
+                                                  <td style="padding: 12px 20px; text-align: left;">₹${item.price}</td>
+                                                  <td style="padding: 12px 20px; text-align: left;">₹${item.price * item.quantity}</td>
+                                              </tr>
+                                              `).join('')}
+                                              <tr style="font-weight: bold; background-color: #e9f0f9;">
+                                                  <td colspan="3" style="padding: 12px 20px; text-align: left; border-top: 2px solid #B9D514;">Total</td>
+                                                  <td style="padding: 12px 20px; text-align: left; border-top: 2px solid #B9D514;">₹${order.orderSummary.total}</td>
+                                              </tr>
+                                          </tbody>
+                                      </table>
+                                  </td>
+                              </tr>
+                          </table>
+                          
+                          <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 20px;">
+                              <tr>
+                                  <td>
+                                      <h2 style="color: #333333; font-size: 20px; margin-bottom: 15px;">Shipping Address</h2>
+                                      <p style="color: #666666; font-size: 14px; line-height: 1.5;">
+                                          ${order.address.address}, ${order.address.city}, ${order.address.state}, ${order.address.country} - ${order.address.pincode}
+                                      </p>
+                                  </td>
+                              </tr>
+                          </table>
+                          
+                          <p style="color: #666666; font-size: 16px; line-height: 1.5; margin-bottom: 20px;">We'll send you another email when your order has been delivered.</p>
+                          <p style="color: #666666; font-size: 16px; line-height: 1.5;">Thank you for shopping with us!</p>
+                      </td>
+                  </tr>
+                  <tr>
+                      <td style="padding: 20px; text-align: center; background-color: #B9D514; color: #ffffff;">
+                          <p style="margin: 0; font-size: 14px;">© ${new Date().getFullYear()} Maalana. All rights reserved.</p>
+                      </td>
+                  </tr>
+              </table>
+          </body>
+          </html>
           `;
         break;
       case 'Pending':
@@ -219,11 +351,13 @@ const updateOrderStatus = async (req, res) => {
     const user = await Users.findById(order.user);
     if (user) {
       // Send an email to the user
+      console.log('Sending email to:', user.email, emailSubject, emailText, emailHtml);
       await sendOrderUpdateEmail(user.email, emailSubject, emailText, emailHtml);
       res.status(200).json({ message: 'Order status updated successfully', order, success: true });
     }
 
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: 'Server error', error });
   }
 };
@@ -339,9 +473,9 @@ const sendEmail = async (req, res) => {
   try {
     // Send email
     const emailOptions = {
-      from: 'Your Maalana <vaibhavrathorema@gmail.com>',
+      from: 'Maalana Support Team <sachingautam6239@gmail.com>',
       to: email,
-      subject: 'Order Confirmation',
+      subject: '🎈 Maalana Order Confirmed! Get Ready for Deliciousness!',
       html: emailHtml
     };
 
