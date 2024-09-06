@@ -286,7 +286,7 @@ const updateOrderStatus = async (req, res) => {
                                               </tr>
                                           </thead>
                                           <tbody>
-                                              ${order.cartItems.map(item => `
+                                              ${order.cartItems.map((item, index) => `
                                               <tr style='background-color: ${index % 2 === 0 ? '#ffffff' : '#f6f9fc'};'>
                                                   <td style="padding: 12px 20px; text-align: left;">${item.name}</td>
                                                   <td style="padding: 12px 20px; text-align: left;">${item.quantity}</td>
@@ -351,7 +351,6 @@ const updateOrderStatus = async (req, res) => {
     const user = await Users.findById(order.user);
     if (user) {
       // Send an email to the user
-      console.log('Sending email to:', user.email, emailSubject, emailText, emailHtml);
       await sendOrderUpdateEmail(user.email, emailSubject, emailText, emailHtml);
       res.status(200).json({ message: 'Order status updated successfully', order, success: true });
     }
