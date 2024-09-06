@@ -41,5 +41,11 @@ router.post('/send-order-details-email', productController.sendEmail);
 // update the order status
 router.put('/update-order-status/:id', productController.updateOrderStatus);
 
+// coupon
+router.post('/generate-coupon', productController.generateCoupon);
+
+// apply coupon
+router.post('/apply-coupon', productController.applyCoupon);
+
 // exports
 module.exports = router;

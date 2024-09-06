@@ -4,7 +4,7 @@ const Product = require('../../model/adminProductAdd/index');
 const BestSellers = require('../../model/adminProductAdd/bestseller')
 const Orders = require('../../model/adminProductAdd/orders')
 const Users = require('../../model/User/users')
-
+const Coupon = require('../../model/adminProductAdd/Coupon')
 
 // Configure Nodemailer transport
 const transporter = nodemailer.createTransport({
@@ -487,7 +487,169 @@ const sendEmail = async (req, res) => {
   }
 };
 
+// Function to generate a unique coupon code based on email and timestamp
+const generateUniqueCouponCode = (email) => {
+  const timestamp = Date.now();  // Current timestamp
+  const emailHash = email.split('@')[0];  // Use part of the email before '@'
+  const uniqueCode = `MAALANA${emailHash.toUpperCase().slice(0, 5)}${timestamp.toString().slice(-4)}`;
+  return uniqueCode;
+};
 
+// Coupon code generator and send email
+const generateCoupon = async (req, res) => {
+  const { email, discount } = req.body;
+  if (!email) {
+    return res.status(400).json({ message: 'Email is required' });
+  }
+
+  try {
+    // Check if coupon code already exists for this email
+    const existingCoupon = await Coupon.findOne({ email });
+    if (existingCoupon) {
+      return res.status(409).json({ message: 'Coupon code already exists for this email.' });
+    }
+
+    // Generate coupon code
+    const couponCode = generateUniqueCouponCode(email);
+
+
+    // Create new coupon
+    const newCoupon = new Coupon({
+      email,
+      discount,
+      couponCode,
+    });
+
+    // Save coupon to database
+    await newCoupon.save();
+
+    // Email options for sending coupon code
+    const emailOptions = {
+      from: 'Maalana Exclusive Offers  <sachingautam6239@gmail.com>',
+      to: email,
+      subject: 'Enjoy 10% Off! Here’s Your Special Maalana Coupon Code',
+      html: `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Your Special Coupon Code</title>
+      </head>
+      <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f6f9fc;">
+        <table cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width: 600px; margin: 0 auto; background-color: #ffffff;">
+          <tr>
+            <td style="padding: 20px; text-align: center; background-color: #B9D514;">
+              <img src="https://res.cloudinary.com/dtivafy25/image/upload/v1725260985/logo-1_rqojr8.png" alt="Maalana Logo" style="max-width: 200px; height: auto;">
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 40px 20px; text-align: center;">
+              <h1 style="color: #333333; font-size: 24px; margin-bottom: 20px;">Your Special Coupon Code</h1>
+              <p style="color: #666666; font-size: 16px; line-height: 1.5; margin-bottom: 20px;">Dear Valued Customer,</p>
+              <p style="color: #666666; font-size: 16px; line-height: 1.5; margin-bottom: 20px;">We're excited to offer you an exclusive discount on your next purchase!</p>
+              
+              <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #f6f9fc; border-radius: 8px; overflow: hidden; margin-bottom: 20px;">
+                <tr>
+                  <td style="padding: 20px; text-align: center;">
+                    <h2 style="color: #333333; font-size: 18px; margin-bottom: 10px;">Use this coupon code:</h2>
+                    <div style="background-color: #ffffff; border: 2px dashed #B9D514; border-radius: 4px; padding: 10px; display: inline-block;">
+                      <span style="color: #B9D514; font-size: 24px; font-weight: bold; letter-spacing: 2px;">${couponCode}</span>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+              
+              <p style="color: #666666; font-size: 16px; line-height: 1.5; margin-bottom: 20px;">This coupon code gives you a 10% discount on your entire purchase. Don't miss out on this amazing offer!</p>
+              
+              <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 20px;">
+                <tr>
+                  <td style="text-align: center;">
+                    <a href="https://maalana-e-commerce.vercel.app" style="display: inline-block; background-color: #B9D514; color: #ffffff; font-size: 16px; font-weight: bold; text-decoration: none; padding: 12px 30px; border-radius: 4px;">Shop Now</a>
+                  </td>
+                </tr>
+              </table>
+              
+              <p style="color: #666666; font-size: 14px; line-height: 1.5; margin-bottom: 20px;">Terms and conditions apply. This offer cannot be combined with other promotions or discounts.</p>
+              
+              <p style="color: #666666; font-size: 16px; line-height: 1.5;">Thank you for being a loyal customer!</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 20px; text-align: center; background-color: #B9D514; color: #ffffff;">
+              <p style="margin: 0; font-size: 14px;">© ${new Date().getFullYear()} Maalana. All rights reserved.</p>
+              <p style="margin: 10px 0 0; font-size: 12px;">
+                You're receiving this email because you've subscribed to our newsletter or made a purchase from our store.
+                <br>
+                <a href="#" style="color: #ffffff; text-decoration: underline;">Unsubscribe</a> | <a href="#" style="color: #ffffff; text-decoration: underline;">Update Preferences</a>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
+      `,
+    };
+
+    // Send the email
+    await transporter.sendMail(emailOptions);
+
+    // Respond with success
+    res.status(200).json({ message: 'Coupon code generated and sent successfully!' });
+
+  } catch (error) {
+    console.error('Error generating coupon code:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+// apply coupon code
+const applyCoupon = async (req, res) => {
+  const { couponCode } = req.body;
+
+  if (!couponCode) {
+    return res.status(400).json({ message: 'Coupon code is required' });
+  }
+
+  try {
+    // Find the coupon by code
+    const coupon = await Coupon.findOne({ couponCode });
+
+    if (!coupon) {
+      return res.status(404).json({ message: 'Coupon code not found' });
+    }
+
+    // Check if the coupon is expired or already used
+    const now = new Date();
+    if (coupon.isUsed) {
+      return res.status(400).json({ message: 'Coupon code has already been used' });
+    }
+
+    if (now > coupon.expiresAt) {
+      return res.status(400).json({ message: 'Coupon code has expired' });
+    }
+
+    // Mark the coupon as used (optional)
+    coupon.isUsed = true;
+    await coupon.save();
+
+    // Respond with success and coupon details
+    res.status(200).json({
+      message: 'Coupon code applied successfully',
+      coupon: {
+        code: coupon.couponCode,
+        discount: `${coupon.discount}%`,  // Return the discount percentage
+      },
+    });
+
+  } catch (error) {
+    console.error('Error applying coupon code:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+
+// remove the 
 
 module.exports = {
   addProduct,
@@ -501,5 +663,7 @@ module.exports = {
   getOrders,
   createOrder,
   sendEmail,
-  updateOrderStatus
+  updateOrderStatus,
+  generateCoupon,
+  applyCoupon
 };
