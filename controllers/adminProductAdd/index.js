@@ -595,7 +595,7 @@ const generateCoupon = async (req, res) => {
     await transporter.sendMail(emailOptions);
 
     // Respond with success
-    res.status(200).json({ message: 'Coupon code generated and sent successfully!' });
+    res.status(200).json({ success: true, message: 'Coupon code generated and sent successfully!' });
 
   } catch (error) {
     console.error('Error generating coupon code:', error);
@@ -635,6 +635,7 @@ const applyCoupon = async (req, res) => {
 
     // Respond with success and coupon details
     res.status(200).json({
+      success: true,
       message: 'Coupon code applied successfully',
       coupon: {
         code: coupon.couponCode,
