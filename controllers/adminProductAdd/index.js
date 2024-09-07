@@ -639,7 +639,7 @@ const applyCoupon = async (req, res) => {
       message: 'Coupon code applied successfully',
       coupon: {
         code: coupon.couponCode,
-        discount: `${coupon.discount}%`,  // Return the discount percentage
+        discount: `${coupon.discount}`,  // Return the discount percentage
       },
     });
 
