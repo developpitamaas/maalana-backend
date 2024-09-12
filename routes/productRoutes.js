@@ -47,5 +47,11 @@ router.post('/generate-coupon', productController.generateCoupon);
 // apply coupon
 router.post('/apply-coupon', productController.applyCoupon);
 
+//payment verification
+router.post('/payment-verification', productController.verifyRazorpayPayment);
+
+// route to create order online payment
+router.post('/create-order-online', productController.createOrderOnline);
+
 // exports
 module.exports = router;

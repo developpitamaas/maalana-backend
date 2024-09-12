@@ -1,4 +1,5 @@
 const axios = require('axios');
+const Razorpay = require('razorpay');
 const nodemailer = require('nodemailer');
 const Product = require('../../model/adminProductAdd/index');
 const BestSellers = require('../../model/adminProductAdd/bestseller')
@@ -13,6 +14,12 @@ const transporter = nodemailer.createTransport({
     user: 'sachingautam6239@gmail.com', // Your email
     pass: 'nxajuvwkblihqind'  // Your email password or application-specific password
   }
+});
+
+// Configure Razorpay
+const razorpayInstance = new Razorpay({
+  key_id: 'rzp_test_DaA1MMEW2IUUYe', // Add your Razorpay Key ID here
+  key_secret: ' q67o8eUlhpkUQAMSQTTgki8y', // Add your Razorpay Key Secret here
 });
 
 const addProduct = async (req, res) => {
@@ -144,7 +151,72 @@ const createOrder = async (req, res) => {
     res.status(200).json({ message: 'Order added successfully and cart cleared', order: newOrder, success: true });
 
   } catch (error) {
-    console.error(error);
+    console.error('Error creating order:', error);
+    res.status(500).json({ message: 'Server error', error });
+  }
+};
+
+const createOrderOnline = async (req, res) => {
+  try {
+    const orderData = req.body;
+
+    // Step 1: Create a Razorpay Order
+    const razorpayOrder = await razorpayInstance.orders.create({
+      amount: orderData.orderSummary.total * 100, // Razorpay expects amount in paise, multiply by 100
+      currency: 'INR',
+      receipt: `receipt_${orderData.user}`,
+    });
+
+    // Step 2: Store the Razorpay order ID in the order data
+    orderData.razorpayOrderId = razorpayOrder.id;
+
+    // Step 3: Create the order in your database
+    const newOrder = new Orders(orderData);
+    await newOrder.save();
+
+    // Step 4: Clear the user's cart after creating the order
+    const userId = orderData.user;
+    await axios.delete(`https://maalana-backend.onrender.com/api/delete-cart/${userId}`);
+
+    // Step 5: Send response back to client with Razorpay order ID
+    res.status(200).json({
+      message: 'Order created successfully and cart cleared',
+      order: newOrder,
+      razorpayOrderId: razorpayOrder.id,
+      success: true,
+    });
+  } catch (error) {
+    console.error('Error creating Razorpay order:', error);
+    res.status(500).json({ message: 'Server error', error });
+  }
+};
+
+// Function to verify the Razorpay payment signature (this should be called after payment is successful)
+const verifyRazorpayPayment = async (req, res) => {
+  try {
+    const { razorpay_payment_id, razorpay_order_id, razorpay_signature } = req.body;
+
+    // Generate the expected signature
+    const generated_signature = crypto
+      .createHmac('sha256', 'q67o8eUlhpkUQAMSQTTgki8y')
+      .update(razorpay_order_id + '|' + razorpay_payment_id)
+      .digest('hex');
+
+    // Step 6: Verify the signature
+    if (generated_signature === razorpay_signature) {
+      // Signature is valid, update the order status to 'Paid'
+      await Orders.updateOne(
+        { razorpayOrderId: razorpay_order_id },
+        { status: 'Paid' }
+      );
+
+      res.status(200).json({ message: 'Payment verified successfully', success: true });
+    } else {
+      // Invalid signature
+      res.status(400).json({ message: 'Invalid signature', success: false });
+    }
+  } catch (error) {
+    console.error('Error verifying Razorpay payment:', error);
     res.status(500).json({ message: 'Server error', error });
   }
 };
@@ -650,6 +722,7 @@ const applyCoupon = async (req, res) => {
 };
 
 
+
 // remove the 
 
 module.exports = {
@@ -666,5 +739,7 @@ module.exports = {
   sendEmail,
   updateOrderStatus,
   generateCoupon,
-  applyCoupon
+  applyCoupon,
+  verifyRazorpayPayment,
+  createOrderOnline
 };

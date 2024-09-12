@@ -9,7 +9,6 @@ const orderSchema = new mongoose.Schema({
     },
     userName: {
         type: String,
-        required: true
     },
 
     cartItems: [
