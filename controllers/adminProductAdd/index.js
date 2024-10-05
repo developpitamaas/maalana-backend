@@ -16,10 +16,10 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-// Configure Razorpay
+// Initialize Razorpay with correct credentials
 const razorpayInstance = new Razorpay({
-  key_id: 'rzp_test_DaA1MMEW2IUUYe', // Add your Razorpay Key ID here
-  key_secret: ' q67o8eUlhpkUQAMSQTTgki8y', // Add your Razorpay Key Secret here
+  key_id: 'rzp_test_mQ80OF7C7GfnTU', 
+  key_secret: 'ETilgefIc6SO5PM1SRFpFHfl', 
 });
 
 const addProduct = async (req, res) => {
