@@ -546,56 +546,60 @@ const sendEmail = async (req, res) => {
   let pagesHtml = '';
   for (let i = 1; i <= totalPages; i++) {
     pagesHtml += `
-      <div style="background-color: #f9f9f9; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);">
-          <h2 style="margin-top: 0;">Order Summary - Page ${i}</h2>
-          ${generatePageContent(i)}
-          <div style="text-align: center; margin-top: 20px;">
-              ${i > 1 ? `<a href="#page${i - 1}" style="text-decoration: none; color: #B9D514;">Previous</a>` : ''}
-              ${i < totalPages ? ` | <a href="#page${i + 1}" style="text-decoration: none; color: #B9D514;">Next</a>` : ''}
-          </div>
-      </div>
-    `;
+    <div style="background-color: #f9f9f9; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);">
+        <!-- Replace the page-specific heading with a single order summary heading -->
+        <h2 style="margin-top: 0; text-align: center;">Your Order Summary</h2>
+        <p style="margin: 0 0 20px; text-align: center; color: #777;">
+            We're thrilled to confirm your order! Here's a detailed summary of your purchase.
+        </p>
+        ${generatePageContent(i)}
+        <div style="text-align: center; margin-top: 20px;">
+            ${i > 1 ? `<a href="#page${i - 1}" style="text-decoration: none; color: #B9D514;">Previous</a>` : ''}
+            ${i < totalPages ? ` | <a href="#page${i + 1}" style="text-decoration: none; color: #B9D514;">Next</a>` : ''}
+        </div>
+    </div>
+  `;
   }
 
   // Email HTML template
   const emailHtml = `
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Order Confirmation</title>
-      </head>
-      <body style="font-family: 'Poppins', sans-serif; background-color: #f4f4f4; color: #333; line-height: 1.6; margin: 0; padding: 0;">
-          <div style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);">
-              <div style="background-color: #B9D514; color: #ffffff; text-align: center; padding: 20px;">
-                  <img src="https://res.cloudinary.com/dtivafy25/image/upload/v1725260985/logo-1_rqojr8.png" alt="Company Logo" style="max-width: 150px; margin-bottom: 10px;">
-                  <h1 style="margin: 0;">Order Confirmed!</h1>
-                  <p style="margin: 0;">Thank you for your purchase</p>
-              </div>
-              <div style="padding: 30px;">
-                  ${pagesHtml}
-                  <div style="font-size: 24px; font-weight: 700; text-align: right; margin-top: 20px; color: #B9D514;">
-                      Total: ₹${orderSummary.total.toFixed(2)}
-                  </div>
-                  <div style="background-color: #f0f7e6; border-radius: 8px; padding: 20px; margin-top: 20px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);">
-                      <h3 style="color: #B9D514; margin-top: 0;">Shipping Information</h3>
-                      <p style="margin: 0;">
-                          ${address.address}, ${address.city}, ${address.state}, ${address.country}, ${address.pincode}
-                      </p>
-                  </div>
-                  <div style="background-color: #f0f7e6; border-radius: 8px; padding: 20px; margin-top: 20px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);">
-                    Order Number: <span>${order.orderNumber}</span><br>
-                  </div>
-                  <a href="#" style="display: inline-block; background-color: #fff; color: #B9D514; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: 600; margin-top: 20px; box-shadow: 0 2px 5px rgba(185, 213, 20, 0.3);">Track Your Order</a>
-              </div>
-              <div style="background-color: #f4f4f4; text-align: center; padding: 20px; font-size: 14px; color: #777;">
-                  If you have any questions, please contact our support team at support@example.com
-              </div>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Order Confirmation</title>
+  </head>
+  <body style="font-family: 'Poppins', sans-serif; background-color: #f4f4f4; color: #333; line-height: 1.6; margin: 0; padding: 0;">
+      <div style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);">
+          <div style="background-color: #B9D514; color: #ffffff; text-align: center; padding: 20px;">
+              <img src="https://res.cloudinary.com/dtivafy25/image/upload/v1725260985/logo-1_rqojr8.png" alt="Company Logo" style="max-width: 150px; margin-bottom: 10px;">
+              <h1 style="margin: 0;">Order Confirmed!</h1>
+              <p style="margin: 0;">Thank you for your purchase</p>
           </div>
-      </body>
-      </html>
-  `;
+          <div style="padding: 30px;">
+              ${pagesHtml}
+              <div style="font-size: 24px; font-weight: 700; text-align: right; margin-top: 20px; color: #B9D514;">
+                  Total: ₹${orderSummary.total.toFixed(2)}
+              </div>
+              <div style="background-color: #f0f7e6; border-radius: 8px; padding: 20px; margin-top: 20px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);">
+                  <h3 style="color: #B9D514; margin-top: 0;">Shipping Information</h3>
+                  <p style="margin: 0;">
+                      ${address.address}, ${address.city}, ${address.state}, ${address.country}, ${address.pincode}
+                  </p>
+              </div>
+              <div style="background-color: #f0f7e6; border-radius: 8px; padding: 20px; margin-top: 20px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);">
+                Order Number: <span>${order.orderNumber}</span><br>
+              </div>
+              <a href="#" style="display: inline-block; background-color: #fff; color: #B9D514; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: 600; margin-top: 20px; box-shadow: 0 2px 5px rgba(185, 213, 20, 0.3);">Track Your Order</a>
+          </div>
+          <div style="background-color: #f4f4f4; text-align: center; padding: 20px; font-size: 14px; color: #777;">
+              If you have any questions, please contact our support team at support@example.com
+          </div>
+      </div>
+  </body>
+  </html>
+`;
 
   try {
     // Send email
