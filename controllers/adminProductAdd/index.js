@@ -19,8 +19,8 @@ const transporter = nodemailer.createTransport({
 
 // Initialize Razorpay with correct credentials
 const razorpayInstance = new Razorpay({
-  key_id: 'rzp_test_mQ80OF7C7GfnTU', 
-  key_secret: 'ETilgefIc6SO5PM1SRFpFHfl', 
+  key_id: 'rzp_test_mQ80OF7C7GfnTU',
+  key_secret: 'ETilgefIc6SO5PM1SRFpFHfl',
 });
 
 const addProduct = async (req, res) => {
@@ -161,9 +161,9 @@ const createOrderOnline = async (req, res) => {
   try {
     const orderData = req.body;
 
-    // Step 1: Create a Razorpay Order
+    // Step 1: Create a Razorpay Order using the Razorpay SDK
     const razorpayOrder = await razorpayInstance.orders.create({
-      amount: orderData.orderSummary.total * 100, // Razorpay expects amount in paise, multiply by 100
+      amount: orderData.orderSummary.total * 100, // Amount in the smallest currency unit (e.g., paisa for INR)
       currency: 'INR',
       receipt: `receipt_${orderData.user}`,
     });
@@ -179,11 +179,13 @@ const createOrderOnline = async (req, res) => {
     const userId = orderData.user;
     await axios.delete(`https://maalana-backend.onrender.com/api/delete-cart/${userId}`);
 
-    // Step 5: Send response back to client with Razorpay order ID
+    // Step 5: Send response back to client with Razorpay order ID and necessary fields
     res.status(200).json({
       message: 'Order created successfully and cart cleared',
       order: newOrder,
-      razorpayOrderId: razorpayOrder.id,
+      razorpayOrderId: razorpayOrder.id, // Send only razorpayOrderId
+      amount: razorpayOrder.amount,
+      currency: razorpayOrder.currency,
       success: true,
     });
   } catch (error) {
@@ -192,35 +194,88 @@ const createOrderOnline = async (req, res) => {
   }
 };
 
-// Function to verify the Razorpay payment signature (this should be called after payment is successful)
+
+// // Function to verify the Razorpay payment signature (this should be called after payment is successful)
+// const verifyRazorpayPayment = async (req, res) => {
+//   try {
+//     const { razorpay_payment_id, razorpay_order_id, razorpay_signature } = req.body;
+
+//     // Generate the expected signature
+//     const generated_signature = crypto
+//       .createHmac('sha256', 'ETilgefIc6SO5PM1SRFpFHfl')
+//       .update(razorpay_order_id + '|' + razorpay_payment_id)
+//       .digest('hex');
+//     console.log(generated_signature, razorpay_signature);
+//     // Step 6: Verify the signature
+//     if (generated_signature === razorpay_signature) {
+//       // Signature is valid, update the order status to 'Paid'
+//       await Orders.updateOne(
+//         { razorpayOrderId: razorpay_order_id },
+//         { status: 'Paid' }
+//       );
+
+//       res.status(200).json({ message: 'Payment verified successfully', success: true });
+//     } else {
+//       // Invalid signature
+//       res.status(400).json({ message: 'Invalid signature', success: false });
+//     }
+//   } catch (error) {
+//     console.error('Error verifying Razorpay payment:', error);
+//     res.status(500).json({ message: 'Server error', error });
+//   }
+// };
+
+
+// // Function to handle Razorpay payment verification without signature check
 const verifyRazorpayPayment = async (req, res) => {
   try {
-    const { razorpay_payment_id, razorpay_order_id, razorpay_signature } = req.body;
+    const { razorpay_payment_id, razorpay_order_id } = req.body;
 
-    // Generate the expected signature
-    const generated_signature = crypto
-      .createHmac('sha256', 'ETilgefIc6SO5PM1SRFpFHfl')
-      .update(razorpay_order_id + '|' + razorpay_payment_id)
-      .digest('hex');
+    if (!razorpay_payment_id || !razorpay_order_id) {
+      return res.status(400).json({ message: 'Missing required payment fields', success: false });
+    }
 
-    // Step 6: Verify the signature
-    if (generated_signature === razorpay_signature) {
-      // Signature is valid, update the order status to 'Paid'
-      await Orders.updateOne(
-        { razorpayOrderId: razorpay_order_id },
-        { status: 'Paid' }
-      );
+    // Retrieve the payment details from Razorpay to ensure it exists
+    const payment = await razorpayInstance.payments.fetch(razorpay_payment_id);
 
-      res.status(200).json({ message: 'Payment verified successfully', success: true });
+    if (payment) {
+      if (payment.status === 'authorized') {
+        // Payment is authorized, capture it
+        const captureResponse = await razorpayInstance.payments.capture(
+          razorpay_payment_id,
+          payment.amount, // Amount to be captured in the smallest unit (e.g., paisa for INR)
+          payment.currency // Currency of the payment
+        );
+
+        if (captureResponse.status === 'captured') {
+          // Payment successfully captured; update order status to 'Paid'
+          await Orders.updateOne({ razorpayOrderId: razorpay_order_id }, { status: 'Paid' });
+
+          return res.status(200).json({ message: 'Payment captured and verified successfully', success: true });
+        } else {
+          // Payment capture failed
+          return res.status(400).json({ message: 'Payment capture failed', success: false });
+        }
+      } else if (payment.status === 'captured') {
+        // Payment is already captured; update order status to 'Paid'
+        await Orders.updateOne({ razorpayOrderId: razorpay_order_id }, { status: 'Paid' });
+
+        return res.status(200).json({ message: 'Payment already captured and verified successfully', success: true });
+      } else {
+        // Payment is not authorized or captured; handle other statuses (failed, refunded, etc.)
+        return res.status(400).json({ message: `Payment status is ${payment.status}. Cannot proceed.`, success: false });
+      }
     } else {
-      // Invalid signature
-      res.status(400).json({ message: 'Invalid signature', success: false });
+      // Payment not found
+      return res.status(400).json({ message: 'Payment not found in Razorpay', success: false });
     }
   } catch (error) {
     console.error('Error verifying Razorpay payment:', error);
     res.status(500).json({ message: 'Server error', error });
   }
 };
+
+
 
 const updateOrderStatus = async (req, res) => {
   try {

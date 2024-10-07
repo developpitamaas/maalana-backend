@@ -222,55 +222,75 @@ const deleteCart = TryCatch(async (req, res, next) => {
   res.status(200).json({ success: true, message: 'All carts deleted successfully.' });
 });
 
-// delete cart product by user id and _id
 const deleteCartProduct = TryCatch(async (req, res, next) => {
   const { userId, cartId } = req.body;
 
-  console.log(typeof userId, typeof cartId);
+  console.log(`Deleting cart for userId: ${userId}, cartId: ${cartId}`);
 
   // Validate input
   if (!userId || !cartId) {
     return res.status(400).json({ success: false, message: 'User ID and cart ID are required.' });
   }
 
-  // Find the cart for the user
-  const cart = await Cart.findOne({ _id: cartId, userId: userId });
-
-  if (!cart) {
-    return res.status(404).json({ success: false, message: 'Cart not found.' });
+  // Check if the provided cartId exists and belongs to the user
+  const existingCart = await Cart.findOne({ _id: cartId, userId: userId });
+  if (!existingCart) {
+    return res.status(404).json({ success: false, message: 'Cart not found for the provided user and cart ID.' });
   }
 
-  // Delete the cart
-  await Cart.deleteOne({ _id: cartId });
+  // Check if it is the last cart item for the user
+  const userCarts = await Cart.find({ userId: userId });
+  console.log(`Total carts found for user: ${userCarts.length}`);
 
-  // Fetch the updated cart for the user
-  const response = await axios.get(`https://maalana-backend.onrender.com/api/get-all-cart-by-user/${userId}`);
-  if (!response) {
-    return res.status(404).json({ success: false, message: 'Cart not found.' });
-  }
+  // If it's the last cart item, proceed to delete it
+  const cartDeleted = await Cart.deleteOne({ _id: cartId });
+  console.log('Cart deleted:', cartDeleted);
 
-  const updatedCart = response.data.cart;
-
-  // Calculate total quantity and total price
-  let totalQuantity = 0;
-  let totalPrice = 0;
-
-  updatedCart.forEach(cartItem => {
-    cartItem.items.forEach(item => {
-      totalQuantity += item.quantity;
-      totalPrice += item.quantity * item.productId.price; // Ensure `item.price` exists
+  if (cartDeleted.deletedCount === 1 && userCarts.length === 1) {
+    // If it was the last cart item for the user and successfully deleted
+    return res.status(200).json({
+      success: true,
+      message: 'All cart items removed successfully. No items left in the cart.',
+      cart: [],
+      totalQuantity: 0,
+      totalPrice: 0,
     });
-  });
+  } else if (cartDeleted.deletedCount === 1) {
+    // If it was deleted successfully but other carts still exist
+    try {
+      // Fetch the updated cart for the user
+      const url = `https://maalana-backend.onrender.com/api/get-all-cart-by-user/${userId}`;
+      console.log(`Fetching updated cart details from URL: ${url}`);
+      const response = await axios.get(url);
 
-  // Respond with success
-  res.status(200).json({
-    success: true,
-    message: 'Cart removed successfully.',
-    cart,
-    totalQuantity,
-    totalPrice
-  });
+      // Calculate total quantity and total price
+      let totalQuantity = 0;
+      let totalPrice = 0;
+
+      response.data.cart.forEach(cartItem => {
+        cartItem.items.forEach(item => {
+          totalQuantity += item.quantity;
+          totalPrice += item.quantity * item.productId.price;
+        });
+      });
+
+      return res.status(200).json({
+        success: true,
+        message: 'Cart item removed successfully.',
+        cart: response.data.cart,
+        totalQuantity,
+        totalPrice,
+      });
+    } catch (error) {
+      console.error(`Error fetching updated cart for userId ${userId}: ${error.response ? error.response.data : error.message}`);
+      return res.status(500).json({ success: false, message: 'Failed to fetch updated cart after deletion.' });
+    }
+  } else {
+    // If the cart item was not deleted
+    return res.status(500).json({ success: false, message: 'Failed to delete the cart item.' });
+  }
 });
+
 
 
 // export
