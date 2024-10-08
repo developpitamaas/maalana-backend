@@ -166,6 +166,7 @@ const createOrderOnline = async (req, res) => {
       amount: orderData.orderSummary.total * 100, // Amount in the smallest currency unit (e.g., paisa for INR)
       currency: 'INR',
       receipt: `receipt_${orderData.user}`,
+      
     });
 
     // Step 2: Store the Razorpay order ID in the order data
@@ -230,6 +231,7 @@ const createOrderOnline = async (req, res) => {
 const verifyRazorpayPayment = async (req, res) => {
   try {
     const { razorpay_payment_id, razorpay_order_id } = req.body;
+    console.log(razorpay_payment_id, razorpay_order_id);
 
     if (!razorpay_payment_id || !razorpay_order_id) {
       return res.status(400).json({ message: 'Missing required payment fields', success: false });
@@ -604,7 +606,7 @@ const sendEmail = async (req, res) => {
   try {
     // Send email
     const emailOptions = {
-      from: 'Maalana Support Team <sachingautam6239@gmail.com>',
+      from: 'Maalana Foods <sachingautam6239@gmail.com>',
       to: email,
       subject: '🎈 Maalana Order Confirmed! Get Ready for Deliciousness!',
       html: emailHtml
