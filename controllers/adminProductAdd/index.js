@@ -138,14 +138,57 @@ const getOrders = async (req, res) => {
   }
 };
 
+
+// get order by user id
+const getOrderByUserId = async (req, res) => {
+  try {
+    const orders = await Orders.find({ user: req.params.userId });
+    console.log('orders', orders);
+    const formattedOrders = orders.map(order => ({
+      orderNumber: order.orderNumber,
+      OrderDate: order.createdAt,
+      totalPrice: order.orderSummary.total,
+      deliveryStatus: order.deliveryStatus,
+      cartItems: order.cartItems.map(item => ({
+        productImage: item.image,
+      })),
+    }));
+
+    res.status(200).json({
+      success: true,
+      data: formattedOrders,
+      message: 'Orders fetched successfully',
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error });
+  }
+};
+
+// get order-details by order number
+
+const getOrderDetailsByOrderNumber = async (req, res) => {
+  try {
+    const orderDetails = await Orders.findOne({ orderNumber: req.params.orderNumber });
+    console.log('orderDetails', orderDetails);
+    res.status(200).json({
+      success: true,
+      data: orderDetails,
+      message: 'Order details fetched successfully',
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error });
+  }
+};
+
 // create orders
 
 const createOrder = async (req, res) => {
   try {
     const orderData = req.body;
+    console.log('orderData', orderData);
     const newOrder = new Orders(orderData);
     await newOrder.save();
-
+    console.log('newOrder', newOrder);
     const userId = orderData.user;
     await axios.delete(`https://maalana-backend.onrender.com/api/delete-cart/${userId}`);
 
@@ -166,7 +209,7 @@ const createOrderOnline = async (req, res) => {
       amount: orderData.orderSummary.total * 100, // Amount in the smallest currency unit (e.g., paisa for INR)
       currency: 'INR',
       receipt: `receipt_${orderData.user}`,
-      
+
     });
 
     // Step 2: Store the Razorpay order ID in the order data
@@ -803,5 +846,7 @@ module.exports = {
   generateCoupon,
   applyCoupon,
   verifyRazorpayPayment,
-  createOrderOnline
+  createOrderOnline,
+  getOrderByUserId,
+  getOrderDetailsByOrderNumber
 };
