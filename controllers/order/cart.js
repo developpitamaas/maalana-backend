@@ -291,6 +291,72 @@ const deleteCartProduct = TryCatch(async (req, res, next) => {
   }
 });
 
+// increase quantity
+const increaseQuantity = TryCatch(async (req, res, next) => {
+  const { cartId, productId, quantity } = req.body;
+  const cart = await Cart.findOne({ _id: cartId });
+  if (!cart) {
+    return res.status(404).json({ success: false, message: 'Cart not found.' });
+  }
+  const product = await Product.findById(productId);
+  if (!product) {
+    return res.status(404).json({ success: false, message: 'Product not found.' });
+  }
+  const itemIndex = cart.items.findIndex(item => item.productId.toString() === productId);
+  if (itemIndex === -1) {
+    return res.status(404).json({ success: false, message: 'Item not found in the cart.' });
+  }
+  cart.items[itemIndex].quantity += quantity;
+  await cart.save();
+  return res.status(200).json({
+    success: true,
+    totalQuantity: cart.items[itemIndex].quantity,
+    totalPrice: cart.items[itemIndex].quantity * product.price,
+    message: 'Quantity increased successfully.'
+  });
+})
+
+// decrease quantity
+const decreaseQuantity = TryCatch(async (req, res, next) => {
+  const { cartId, productId, quantity } = req.body;
+
+  // Find the cart by its ID
+  const cart = await Cart.findOne({ _id: cartId });
+  if (!cart) {
+    return res.status(404).json({ success: false, message: 'Cart not found.' });
+  }
+
+  // Find the product by its ID
+  const product = await Product.findById(productId);
+  if (!product) {
+    return res.status(404).json({ success: false, message: 'Product not found.' });
+  }
+
+  // Find the index of the item in the cart
+  const itemIndex = cart.items.findIndex(item => item.productId.toString() === productId);
+  if (itemIndex === -1) {
+    return res.status(404).json({ success: false, message: 'Item not found in the cart.' });
+  }
+
+  // Decrease the quantity
+  cart.items[itemIndex].quantity -= quantity;
+
+  // Check if the quantity is zero or less, and remove the item from the cart if it's the last one
+  if (cart.items[itemIndex].quantity <= 0 && cart.items.length > 1) {
+    cart.items.splice(itemIndex, 1); // Remove the item from the cart
+  }
+
+  // Save the updated cart
+  await cart.save();
+
+  return res.status(200).json({
+    success: true,
+    totalQuantity: cart.items[itemIndex] ? cart.items[itemIndex].quantity : 0, // Return 0 if the item is removed
+    message: cart.items[itemIndex] ? 'Quantity decreased successfully.' : 'Item removed from the cart as quantity reached zero.'
+  });
+});
+
+
 
 
 // export
@@ -301,5 +367,7 @@ module.exports = {
   updateCart,
   getAllCartByUser,
   deleteCart,
-  deleteCartProduct
+  deleteCartProduct,
+  increaseQuantity,
+  decreaseQuantity
 };

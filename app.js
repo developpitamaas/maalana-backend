@@ -56,7 +56,7 @@ app.use(
 
 // default route
 app.get("/", (req, res) => {
-  res.send("Hello World!, Server is running");
+  res.send("Welcome to Maa  lana Backend");
 });
 
 app.post('/api/create-order', (req, res) => {

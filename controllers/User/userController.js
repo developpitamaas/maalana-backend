@@ -373,6 +373,7 @@ const newForgotPassword = Trycatch(async (req, res, next) => {
                 background-color: #ffffff;
                 color: #333333;
                 line-height: 1.6;
+                text-align: center;
             }
             .logo {
                 max-width: 200px;
@@ -387,6 +388,7 @@ const newForgotPassword = Trycatch(async (req, res, next) => {
                 display: flex;
                 justify-content: center;
                 margin: 30px 0;
+                text-align: center;
             }
             .otp-digit {
                 background-color: #9ACA3C;
@@ -395,11 +397,9 @@ const newForgotPassword = Trycatch(async (req, res, next) => {
                 font-weight: bold;
                 width: 40px;
                 height: 40px;
-                display: flex !important;
-                justify-content: center !important;
-                align-items: center !important;
-                margin: 0 5px;
+                margin: 20px 5px;
                 border-radius: 5px;
+                text-align: center;
             }
             .footer {
                 margin-top: 30px;

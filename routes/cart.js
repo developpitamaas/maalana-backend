@@ -22,5 +22,12 @@ Cart.route("/delete-cart/:userId").delete(Data.deleteCart);
 
 // delete cart product by user id and _id 
 Cart.route("/delete-cart-product").delete(Data.deleteCartProduct);
+
+// increase quantity
+Cart.route("/increase-quantity").put(Data.increaseQuantity);
+
+// decrease quantity
+Cart.route("/decrease-quantity").put(Data.decreaseQuantity);
+
 // exports
 module.exports = Cart;

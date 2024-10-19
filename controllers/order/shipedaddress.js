@@ -5,7 +5,7 @@ const User = require("../../model/User/users");
 // create shiped address
 const CreateShipedAddress = TryCatch(async (req, res, next) => {
     const shipedaddress = await Shipedaddress.create(req.body);
-    res.status(201).json({
+    res.status(200).json({
         success: true,
         message: "Shiped address created successfully",
         shipedaddress,
