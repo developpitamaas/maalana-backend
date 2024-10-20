@@ -6,7 +6,6 @@ const Product = require("../../model/Product/product");
 
 const addToCart = TryCatch(async (req, res, next) => {
   const { productId, quantity, shippingPrice, CoupanCode, id, } = req.body;
-  console.log(req.body);
   if (!productId || !quantity) {
     return res.status(400).json({ success: false, message: 'Product ID and quantity are required.' });
   }
@@ -53,7 +52,7 @@ const addToCart = TryCatch(async (req, res, next) => {
   let totalPrice = 0;
 
   try {
-    const response = await axios.get(`http://maalana-backend.onrender.com/api/get-all-cart-by-user/${id}`);
+    const response = await axios.get(`http://localhost:8000/api/get-all-cart-by-user/${id}`);
     const updatedCart = response.data.cart;
 
     // Calculate total quantity and total price
@@ -67,6 +66,7 @@ const addToCart = TryCatch(async (req, res, next) => {
       success: true,
       cart,
       totalQuantity,
+      cartQuantity: 1,
       totalPrice,
       message: "Product added to cart successfully",
     });
@@ -204,7 +204,6 @@ const updateCart = TryCatch(async (req, res, next) => {
 
 const deleteCart = TryCatch(async (req, res, next) => {
   const { userId } = req.params;
-  console.log(userId);
 
   // Validate input
   if (!userId) {
@@ -225,8 +224,6 @@ const deleteCart = TryCatch(async (req, res, next) => {
 const deleteCartProduct = TryCatch(async (req, res, next) => {
   const { userId, cartId } = req.body;
 
-  console.log(`Deleting cart for userId: ${userId}, cartId: ${cartId}`);
-
   // Validate input
   if (!userId || !cartId) {
     return res.status(400).json({ success: false, message: 'User ID and cart ID are required.' });
@@ -238,49 +235,46 @@ const deleteCartProduct = TryCatch(async (req, res, next) => {
     return res.status(404).json({ success: false, message: 'Cart not found for the provided user and cart ID.' });
   }
 
-  // Check if it is the last cart item for the user
-  const userCarts = await Cart.find({ userId: userId });
-  console.log(`Total carts found for user: ${userCarts.length}`);
-
-  // If it's the last cart item, proceed to delete it
+  // Delete the cart item
   const cartDeleted = await Cart.deleteOne({ _id: cartId });
-  console.log('Cart deleted:', cartDeleted);
-
-  if (cartDeleted.deletedCount === 1 && userCarts.length === 1) {
-    // If it was the last cart item for the user and successfully deleted
-    return res.status(200).json({
-      success: true,
-      message: 'All cart items removed successfully. No items left in the cart.',
-      cart: [],
-      totalQuantity: 0,
-      totalPrice: 0,
-    });
-  } else if (cartDeleted.deletedCount === 1) {
-    // If it was deleted successfully but other carts still exist
+  if (cartDeleted.deletedCount === 1) {
+    // Fetch the updated cart for the user
     try {
-      // Fetch the updated cart for the user
-      const url = `https://maalana-backend.onrender.com/api/get-all-cart-by-user/${userId}`;
-      console.log(`Fetching updated cart details from URL: ${url}`);
-      const response = await axios.get(url);
+      const userCarts = await Cart.find({ userId: userId });
 
-      // Calculate total quantity and total price
-      let totalQuantity = 0;
-      let totalPrice = 0;
+      // If there are still carts, fetch the updated cart
+      if (userCarts.length > 0) {
+        const url = `http://localhost:8000/api/get-all-cart-by-user/${userId}`;
+        const response = await axios.get(url);
 
-      response.data.cart.forEach(cartItem => {
-        cartItem.items.forEach(item => {
-          totalQuantity += item.quantity;
-          totalPrice += item.quantity * item.productId.price;
+        // Calculate total quantity and total price
+        let totalQuantity = 0;
+        let totalPrice = 0;
+
+        response.data.cart.forEach(cartItem => {
+          cartItem.items.forEach(item => {
+            totalQuantity += item.quantity;
+            totalPrice += item.quantity * item.productId.price;
+          });
         });
-      });
 
-      return res.status(200).json({
-        success: true,
-        message: 'Cart item removed successfully.',
-        cart: response.data.cart,
-        totalQuantity,
-        totalPrice,
-      });
+        return res.status(200).json({
+          success: true,
+          message: 'Cart item removed successfully.',
+          totalQuantity,
+          totalPrice,
+          cartQuantity:0
+        });
+      } else {
+        // If it was the last cart item for the user
+        return res.status(200).json({
+          success: true,
+          message: 'All cart items removed successfully. No items left in the cart.',
+          totalQuantity: 0,
+          totalPrice: 0,
+          cartQuantity:0
+        });
+      }
     } catch (error) {
       console.error(`Error fetching updated cart for userId ${userId}: ${error.response ? error.response.data : error.message}`);
       return res.status(500).json({ success: false, message: 'Failed to fetch updated cart after deletion.' });
@@ -291,71 +285,143 @@ const deleteCartProduct = TryCatch(async (req, res, next) => {
   }
 });
 
-// increase quantity
+
 const increaseQuantity = TryCatch(async (req, res, next) => {
-  const { cartId, productId, quantity } = req.body;
-  const cart = await Cart.findOne({ _id: cartId });
-  if (!cart) {
-    return res.status(404).json({ success: false, message: 'Cart not found.' });
+  const { cartId, productId, quantity, userId } = req.body; // Include userId to fetch cart after updating
+
+  try {
+    // Validate input
+    if (!cartId || !productId || quantity <= 0 || !userId) {
+      return res.status(400).json({ success: false, message: 'Invalid input data.' });
+    }
+
+    // Find the cart
+    const cart = await Cart.findById(cartId);
+    if (!cart) {
+      return res.status(404).json({ success: false, message: 'Cart not found.' });
+    }
+
+    // Find the product
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ success: false, message: 'Product not found.' });
+    }
+
+    // Check if the item exists in the cart
+    const itemIndex = cart.items.findIndex(item => item.productId.toString() === productId);
+    if (itemIndex === -1) {
+      return res.status(404).json({ success: false, message: 'Item not found in the cart.' });
+    }
+
+    // Increase the quantity
+    cart.items[itemIndex].quantity += quantity;
+
+    // Save the cart
+    await cart.save();
+
+    // Calculate total price
+    const totalPrice = cart.items[itemIndex].quantity * product.price;
+
+    // Fetch the updated cart details
+    const url = `http://localhost:8000/api/get-all-cart-by-user/${userId}`;
+
+    const response = await axios.get(url);
+
+    // Calculate total quantity and total price
+    let totalQuantity = 0;
+    let totalPriceAfterFetch = 0;
+
+    response.data.cart.forEach(cartItem => {
+      cartItem.items.forEach(item => {
+        totalQuantity += item.quantity;
+        totalPriceAfterFetch += item.quantity * item.productId.price;
+      });
+    });
+
+    return res.status(200).json({
+      success: true,
+      totalPrice: totalPrice,
+      subTotalPrice: totalPriceAfterFetch,
+      totalQuantity: totalQuantity,
+      cartQuantity: cart.items[itemIndex] ? cart.items[itemIndex].quantity : 0, 
+      message: 'Quantity increased successfully and cart updated.'
+    });
+  } catch (error) {
+    console.error('Error increasing quantity:', error);
+    return res.status(500).json({ success: false, message: 'Internal server error.' });
   }
-  const product = await Product.findById(productId);
-  if (!product) {
-    return res.status(404).json({ success: false, message: 'Product not found.' });
-  }
-  const itemIndex = cart.items.findIndex(item => item.productId.toString() === productId);
-  if (itemIndex === -1) {
-    return res.status(404).json({ success: false, message: 'Item not found in the cart.' });
-  }
-  cart.items[itemIndex].quantity += quantity;
-  await cart.save();
-  return res.status(200).json({
-    success: true,
-    totalQuantity: cart.items[itemIndex].quantity,
-    totalPrice: cart.items[itemIndex].quantity * product.price,
-    message: 'Quantity increased successfully.'
-  });
-})
-
-// decrease quantity
-const decreaseQuantity = TryCatch(async (req, res, next) => {
-  const { cartId, productId, quantity } = req.body;
-
-  // Find the cart by its ID
-  const cart = await Cart.findOne({ _id: cartId });
-  if (!cart) {
-    return res.status(404).json({ success: false, message: 'Cart not found.' });
-  }
-
-  // Find the product by its ID
-  const product = await Product.findById(productId);
-  if (!product) {
-    return res.status(404).json({ success: false, message: 'Product not found.' });
-  }
-
-  // Find the index of the item in the cart
-  const itemIndex = cart.items.findIndex(item => item.productId.toString() === productId);
-  if (itemIndex === -1) {
-    return res.status(404).json({ success: false, message: 'Item not found in the cart.' });
-  }
-
-  // Decrease the quantity
-  cart.items[itemIndex].quantity -= quantity;
-
-  // Check if the quantity is zero or less, and remove the item from the cart if it's the last one
-  if (cart.items[itemIndex].quantity <= 0 && cart.items.length > 1) {
-    cart.items.splice(itemIndex, 1); // Remove the item from the cart
-  }
-
-  // Save the updated cart
-  await cart.save();
-
-  return res.status(200).json({
-    success: true,
-    totalQuantity: cart.items[itemIndex] ? cart.items[itemIndex].quantity : 0, // Return 0 if the item is removed
-    message: cart.items[itemIndex] ? 'Quantity decreased successfully.' : 'Item removed from the cart as quantity reached zero.'
-  });
 });
 
+
+const decreaseQuantity = TryCatch(async (req, res, next) => {
+  const { cartId, productId, quantity, userId } = req.body; // Include userId to fetch cart after updating
+  try {
+    // Validate input
+    if (!cartId || !productId || quantity <= 0 || !userId) {
+      return res.status(400).json({ success: false, message: 'Invalid input data.' });
+    }
+
+    // Find the cart
+    const cart = await Cart.findById(cartId);
+    if (!cart) {
+      return res.status(404).json({ success: false, message: 'Cart not found.' });
+    }
+
+    // Find the product
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ success: false, message: 'Product not found.' });
+    }
+
+    // Check if the item exists in the cart
+    const itemIndex = cart.items.findIndex(item => item.productId.toString() === productId);
+    if (itemIndex === -1) {
+      return res.status(404).json({ success: false, message: 'Item not found in the cart.' });
+    }
+
+    // Decrease the quantity
+    cart.items[itemIndex].quantity -= quantity;
+
+    // Ensure quantity doesn't go below 1
+    if (cart.items[itemIndex].quantity < 1) {
+      cart.items.splice(itemIndex, 1); // Remove item from cart if quantity is less than 1
+    }
+
+    // Save the cart
+    await cart.save();
+
+    // Calculate updated total price for the product
+    const totalPrice = cart.items[itemIndex] ? cart.items[itemIndex].quantity * product.price : 0;
+
+    // Fetch the updated cart details
+    const url = `http://localhost:8000/api/get-all-cart-by-user/${userId}`;
+
+    const response = await axios.get(url);
+
+    // Calculate total quantity and total price after fetch
+    let totalQuantity = 0;
+    let totalPriceAfterFetch = 0;
+    response.data.cart.forEach(cartItem => {
+      console.log('cartItem', cartItem);
+      cartItem.items.forEach(item => {
+        totalQuantity += item.quantity;
+        totalPriceAfterFetch += item.quantity * item.productId.price;
+      });
+    });
+
+    return res.status(200).json({
+      success: true,
+      totalQuantity: totalQuantity,
+      totalPrice: totalPrice,
+      subTotalPrice: totalPriceAfterFetch,
+      cartQuantity: cart.items[itemIndex] ? cart.items[itemIndex].quantity : 0, 
+      message: 'Quantity decreased successfully and cart updated.'
+    });
+  } catch (error) {
+    console.error('Error decreasing quantity:', error);
+    return res.status(500).json({ success: false, message: 'Internal server error.' });
+  }
+});
 
 
 
