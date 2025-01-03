@@ -21,6 +21,7 @@ const ProductAdd = require("./routes/productRoutes");
 const Statistics = require("./routes/statistics");
 const Categories = require("./model/Product/Categories");
 const BestSellerProduct = require("./routes/BestSellerProduct");
+const MaalanaProduct = require("./routes/maalanaProduct");
 
 // define app using express
 const app = express();
@@ -52,6 +53,7 @@ app.use(
   Statistics,
   Categories,
   BestSellerProduct,
+  MaalanaProduct
 );
 
 // default route
