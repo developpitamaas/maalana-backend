@@ -1,21 +1,37 @@
-const app = require("./app");
+const express = require("express");
 const dotenv = require("dotenv");
-const database = require("./config/database");
+const cors = require("cors");
+const bodyParser = require("body-parser");
+const connectDB = require("./config/db");
+const authRoutes = require("./routes/authRoutes");
+const adminRoutes = require("./routes/adminRoutes");
+const productsRoutes = require("./routes/addProductsRoutes");
+const categoryRoutes = require("./routes/categoryRoutes");
+const cartRoutes = require("./routes/cartRoutes");
 
-// Load environment variables
 dotenv.config();
 
-// Load database
-database();
+const app = express();
 
+// Middleware
+app.use(cors({ origin: "*" }));
 
+// Increase the request size limit to 50MB
+app.use(express.json({ limit: '50mb' }));
+app.use(bodyParser.urlencoded({ extended: true, limit: '50mb' }));
 
+// Database Connection
+connectDB();
 
+// Routes
+app.use("/api/auth", authRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/products", productsRoutes);
+app.use("/api/category", categoryRoutes);
+app.use('/api/cart', cartRoutes);
 
-// Start server
+const PORT = process.env.PORT || 5000;
 
-const server = app.listen(process.env.PORT, () => {
-    console.log(`Server started on port ${process.env.PORT}`);
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });
-
-server.setTimeout(120000); // 2-minute timeout

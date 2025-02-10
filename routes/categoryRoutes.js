@@ -1,24 +1,11 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const multer = require('multer');
-const categoryController = require('../controllers/adminCategory/index');
+const { addCategory,getAllCategories, updateCategory, deleteCategory } = require("../controllers/categoryController");
 
-// Multer configuration for file uploads
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, 'uploads/');
-    },
-    filename: function (req, file, cb) {
-        cb(null, Date.now() + '-' + file.originalname);
-    }
-});
+router.post("/add-category", addCategory);
+router.get("/get-all-categories", getAllCategories);
+router.put("/update-category/:id", updateCategory);
+router.delete("/delete-category/:id", deleteCategory);
 
-const upload = multer({ storage: storage });
-
-router.get('/', categoryController.getAllCategories);
-router.get('/:id', categoryController.getCategoryById);
-router.post('/', upload.single('image'), categoryController.createCategory);
-router.put('/:id', upload.single('image'), categoryController.updateCategory);
-router.delete('/:id', categoryController.deleteCategory);
 
 module.exports = router;
