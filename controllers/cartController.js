@@ -34,33 +34,36 @@ exports.addToCart = async (req, res) => {
     }
 };
 
-// ✅ Get Cart for a Specific User
+// ✅ Get Cart for a Specific User (Fixed)
 exports.getCart = async (req, res) => {
     const { userId } = req.query;
 
     if (!userId) {
-        return res.status(400).json({ message: 'User ID is required.' });
+        return res.status(400).json({ message: "User ID is required." });
     }
 
     try {
         const cartItems = await Cart.find({ userId }).populate({
-            path: 'productId',
-            select: 'name price images',
+            path: "productId",
+            select: "name price images",
             model: Product
         });
 
-        if (cartItems.length === 0) {
-            return res.status(404).json({ message: 'Cart is empty.', cart: [] });
+        if (!cartItems.length) {
+            return res.status(404).json({ message: "Cart is empty.", cart: [] });
         }
 
-        const formattedCart = cartItems.map(item => {
+        // ✅ Filter out items where the product reference is null
+        const validCartItems = cartItems.filter(item => item.productId !== null);
+
+        // ✅ Format cart response
+        const formattedCart = validCartItems.map(item => {
             const product = item.productId;
-            const totalPrice = product.price * item.quantity;
 
             return {
                 _id: item._id,
                 quantity: item.quantity,
-                totalPrice,
+                totalPrice: product.price * item.quantity,
                 product: {
                     id: product._id,
                     name: product.name,
@@ -69,13 +72,14 @@ exports.getCart = async (req, res) => {
                 }
             };
         });
-
         res.status(200).json({ cart: formattedCart });
+
     } catch (error) {
-        console.error('Error fetching cart:', error);
-        res.status(500).json({ message: 'Internal Server Error', error: error.message });
+        console.error("Error fetching cart:", error);
+        res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
+
 
 // ✅ Remove Product from Cart for a Specific User
 exports.removeFromCart = async (req, res) => {
