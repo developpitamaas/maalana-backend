@@ -15,15 +15,21 @@ const productSchema = new mongoose.Schema(
     },
     flavour: String,
     itemForm: String,
-    ingredients: String,
-    calories: { type: Number, min: [0, "Calories cannot be negative"] },
-    protein: { type: Number, min: [0, "Protein cannot be negative"] },
-    carbohydrates: { type: Number, min: [0, "Carbohydrates cannot be negative"] },
-    fat: { type: Number, min: [0, "Fat cannot be negative"] },
-    fiber: { type: Number, min: [0, "Fiber cannot be negative"] },
-    sugar: { type: Number, min: [0, "Sugar cannot be negative"] },
-    sodium: { type: Number, min: [0, "Sodium cannot be negative"] },
-    cholesterol: { type: Number, min: [0, "Cholesterol cannot be negative"] },
+    ingredientsData: {
+      main: [String],
+      foodColors: [String],
+      flavors: [String]
+    },
+    nutritionalInfo: {
+      energy: { per100gm: Number, perServing: Number, rda: String },
+      protein: { per100gm: Number, perServing: String, rda: String },
+      carbohydrates: { per100gm: Number, perServing: Number, rda: String },
+      totalSugar: { per100gm: Number, perServing: Number, rda: String },
+      addedSugar: { per100gm: Number, perServing: Number, rda: String },
+      fat: { per100gm: Number, perServing: String, rda: String },
+      cholesterol: { per100gm: Number, perServing: String, rda: String },
+      sodium: { per100gm: Number, perServing: Number, rda: String }
+    },
     category: {
       type: String,
       enum: [
@@ -37,11 +43,16 @@ const productSchema = new mongoose.Schema(
     },
     foodCategory: {
       type: String,
-      enum: ["Sweets", "Savory", "Beverages", "Vegetarian", "Non-Vegetarian", ""], // ✅ Allowing empty string if optional
-      default: "", // Set default to an empty string
+      enum: ["Sweets", "Savory", "Beverages", "Vegetarian", "Non-Vegetarian", ""],
+      default: "",
     },
     brand: String,
     description: String,
+    aboutThisItem: [String],
+    allergyAdvice: {
+      type: Map,
+      of: String
+    },
     images: [String],
   },
   { timestamps: true }

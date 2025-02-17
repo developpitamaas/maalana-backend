@@ -22,10 +22,9 @@ const parseNumericValue = (value) => {
 const addProducts = async (req, res) => {
     try {
         const {
-            name, price, quantity, flavour, itemForm, ingredients,
-            calories, protein, carbohydrates, fat, fiber, sugar,
-            sodium, cholesterol, category, foodCategory, brand, description,
-            images
+            name, price, quantity, flavour, itemForm, ingredientsData,
+            nutritionalInfo, category, foodCategory, brand, description,
+            aboutThisItem, allergyAdvice, images
         } = req.body;
 
         // Validate required fields
@@ -50,31 +49,68 @@ const addProducts = async (req, res) => {
             }
         }
 
-        // Sanitize numeric fields
-        const sanitizedProduct = {
+        // Create a new product using the sanitized data
+        const newProduct = new Products({
             name,
-            price,
-            quantity,
+            price: parseNumericValue(price),
+            quantity: parseNumericValue(quantity),
             flavour,
             itemForm,
-            ingredients,
-            calories: parseNumericValue(calories),
-            protein: parseNumericValue(protein),
-            carbohydrates: parseNumericValue(carbohydrates),
-            fat: parseNumericValue(fat),
-            fiber: parseNumericValue(fiber),
-            sugar: parseNumericValue(sugar),
-            sodium: parseNumericValue(sodium),
-            cholesterol: parseNumericValue(cholesterol),
+            ingredientsData: {
+                main: ingredientsData.main || [],
+                foodColors: ingredientsData.foodColors || [],
+                flavors: ingredientsData.flavors || []
+            },
+            nutritionalInfo: {
+                energy: {
+                    per100gm: parseNumericValue(nutritionalInfo.energy?.per100gm),
+                    perServing: parseNumericValue(nutritionalInfo.energy?.perServing),
+                    rda: nutritionalInfo.energy?.rda || ""
+                },
+                protein: {
+                    per100gm: parseNumericValue(nutritionalInfo.protein?.per100gm),
+                    perServing: nutritionalInfo.protein?.perServing || "",
+                    rda: nutritionalInfo.protein?.rda || ""
+                },
+                carbohydrates: {
+                    per100gm: parseNumericValue(nutritionalInfo.carbohydrates?.per100gm),
+                    perServing: parseNumericValue(nutritionalInfo.carbohydrates?.perServing),
+                    rda: nutritionalInfo.carbohydrates?.rda || ""
+                },
+                totalSugar: {
+                    per100gm: parseNumericValue(nutritionalInfo.totalSugar?.per100gm),
+                    perServing: parseNumericValue(nutritionalInfo.totalSugar?.perServing),
+                    rda: nutritionalInfo.totalSugar?.rda || ""
+                },
+                addedSugar: {
+                    per100gm: parseNumericValue(nutritionalInfo.addedSugar?.per100gm),
+                    perServing: parseNumericValue(nutritionalInfo.addedSugar?.perServing),
+                    rda: nutritionalInfo.addedSugar?.rda || ""
+                },
+                fat: {
+                    per100gm: parseNumericValue(nutritionalInfo.fat?.per100gm),
+                    perServing: nutritionalInfo.fat?.perServing || "",
+                    rda: nutritionalInfo.fat?.rda || ""
+                },
+                cholesterol: {
+                    per100gm: parseNumericValue(nutritionalInfo.cholesterol?.per100gm),
+                    perServing: nutritionalInfo.cholesterol?.perServing || "",
+                    rda: nutritionalInfo.cholesterol?.rda || ""
+                },
+                sodium: {
+                    per100gm: parseNumericValue(nutritionalInfo.sodium?.per100gm),
+                    perServing: parseNumericValue(nutritionalInfo.sodium?.perServing),
+                    rda: nutritionalInfo.sodium?.rda || ""
+                }
+            },
             category,
             foodCategory,
             brand,
             description,
+            aboutThisItem: aboutThisItem || [],
+            allergyAdvice: allergyAdvice || {},
             images: imageUrls
-        };
-
-        // Create a new product using the sanitized data
-        const newProduct = new Products(sanitizedProduct);
+        });
 
         // Save the new product to the database
         await newProduct.save();
@@ -86,6 +122,7 @@ const addProducts = async (req, res) => {
         res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
+
 
 // get all products
 const getAllProducts = async (req, res) => {

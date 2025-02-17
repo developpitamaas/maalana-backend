@@ -29,6 +29,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/products", productsRoutes);
 app.use("/api/category", categoryRoutes);
 app.use('/api/cart', cartRoutes);
+// app.use('/api/orders', orderRoutes);
 
 const PORT = process.env.PORT || 5000;
 
