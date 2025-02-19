@@ -9,6 +9,8 @@ const productsRoutes = require("./routes/addProductsRoutes");
 const categoryRoutes = require("./routes/categoryRoutes");
 const cartRoutes = require("./routes/cartRoutes");
 const orderRoutes = require("./routes/orderRoutes");
+const dashboardRoutes = require("./routes/dashboardRoutes");
+const bannerRoutes = require("./routes/bannerRoutes");
 
 dotenv.config();
 
@@ -31,6 +33,8 @@ app.use("/api/products", productsRoutes);
 app.use("/api/category", categoryRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
+app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/banners", bannerRoutes);
 
 const PORT = process.env.PORT || 5000;
 

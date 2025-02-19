@@ -8,6 +8,8 @@ const razorpay = new Razorpay({
     key_secret: process.env.RAZORPAY_KEY_SECRET
 });
 
+
+
 // ✅ Create Order API
 exports.createOrder = async (req, res) => {
     const { userId, paymentMethod } = req.body;
@@ -20,36 +22,52 @@ exports.createOrder = async (req, res) => {
         // 🛒 Fetch user's cart
         const cartItems = await Cart.find({ userId }).populate({
             path: "productId",
-            model: Product, // ✅ Use correct model reference
-            select: "name price images"
+            model: Product,
+            select: "name price images quantity"
         });
 
         if (cartItems.length === 0) {
             return res.status(400).json({ message: "Cart is empty." });
         }
 
-        // 🛍️ Prepare order details
+        // 🛍️ Prepare order details & check stock availability
         let totalAmount = 0;
-        const orderProducts = cartItems.map(item => {
+        const orderProducts = [];
+        const outOfStockProducts = [];
+
+        for (const item of cartItems) {
             const product = item.productId;
             const totalPrice = product.price * item.quantity;
             totalAmount += totalPrice;
 
-            return {
-                productId: product._id,
-                name: product.name,
-                price: product.price,
-                quantity: item.quantity,
-                image: product.images[0] || ""
-            };
-        });
+            // ✅ Check if enough stock is available
+            if (product.quantity < item.quantity) {
+                outOfStockProducts.push({ name: product.name, availableStock: product.quantity });
+            } else {
+                orderProducts.push({
+                    productId: product._id,
+                    name: product.name,
+                    price: product.price,
+                    quantity: item.quantity,
+                    image: product.images[0] || ""
+                });
+            }
+        }
+
+        // ❌ If any product is out of stock, prevent order creation
+        if (outOfStockProducts.length > 0) {
+            return res.status(400).json({
+                message: "Some products are out of stock",
+                outOfStockProducts
+            });
+        }
 
         let newOrder = new Order({
             userId,
             products: orderProducts,
             totalAmount,
             paymentMethod,
-            paymentStatus: paymentMethod === "COD" ? "Pending" : "Paid" // Razorpay needs confirmation
+            paymentStatus: paymentMethod === "COD" ? "Pending" : "Paid"
         });
 
         // 💰 If Razorpay, create a payment order
@@ -59,12 +77,18 @@ exports.createOrder = async (req, res) => {
             const razorpayOrder = await razorpay.orders.create({
                 amount: totalAmount * 100, // Amount in paise
                 currency: "INR",
-                receipt: shortReceipt // ✅ Shortened to max 40 chars
+                receipt: shortReceipt
             });
-
 
             newOrder.razorpayOrderId = razorpayOrder.id;
             newOrder.paymentStatus = "Pending";
+        }
+
+        // ✅ Decrease product stock after order is placed
+        for (const item of cartItems) {
+            await Product.findByIdAndUpdate(item.productId._id, {
+                $inc: { quantity: -item.quantity }
+            });
         }
 
         // 🎯 Save order & remove from cart
@@ -80,6 +104,7 @@ exports.createOrder = async (req, res) => {
         res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
+
 
 
 // ✅ Verify Razorpay Payment and Update Order Status
