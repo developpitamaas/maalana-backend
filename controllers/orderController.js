@@ -8,8 +8,6 @@ const razorpay = new Razorpay({
     key_secret: process.env.RAZORPAY_KEY_SECRET
 });
 
-
-
 // ✅ Create Order API
 exports.createOrder = async (req, res) => {
     const { userId, paymentMethod } = req.body;
@@ -128,6 +126,47 @@ exports.verifyPayment = async (req, res) => {
         res.status(200).json({ message: "Payment successful!", order });
     } catch (error) {
         console.error("Payment verification error:", error);
+        res.status(500).json({ message: "Internal Server Error", error: error.message });
+    }
+};
+
+
+exports.getAllOrders = async (req, res) => {
+    const { userId } = req.query;
+
+    if (!userId) {
+        return res.status(400).json({ message: "User ID is required." });
+    }
+
+    try {
+        const orders = await Order.find({ userId });
+
+        res.status(200).json({ orders });
+    } catch (error) {
+        console.error("Error fetching orders:", error);
+        res.status(500).json({ message: "Internal Server Error", error: error.message });
+    }
+};
+
+
+// ✅ Get Order by ID
+exports.getOrderById = async (req, res) => {
+    const { orderId } = req.params;
+
+    if (!orderId) {
+        return res.status(400).json({ message: "Order ID is required." });
+    }
+
+    try {
+        const order = await Order.findById(orderId);
+
+        if (!order) {
+            return res.status(404).json({ message: "Order not found." });
+        }
+
+        res.status(200).json({ order });
+    } catch (error) {
+        console.error("Error fetching order:", error);
         res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
