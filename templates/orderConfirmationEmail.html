@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Order Confirmation - Maalana</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .header {
+            background-color: #B9D514;
+            padding: 20px;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+        }
+
+        .header img {
+            width: 180px;
+        }
+
+        .content {
+            padding: 20px;
+            color: #333;
+            text-align: left;
+        }
+
+        .content h2 {
+            color: #000;
+            font-size: 24px;
+        }
+
+        .content p {
+            font-size: 16px;
+            margin: 10px 0;
+            line-height: 1.5;
+        }
+
+        .order-details {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .order-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+
+        .order-item img {
+            width: 80px;
+            border-radius: 8px;
+        }
+
+        .order-item div {
+            flex-grow: 1;
+        }
+
+        .order-item h4 {
+            margin: 5px 0;
+            font-size: 16px;
+            color: black;
+        }
+
+        .order-item p {
+            margin: 0;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .summary {
+            margin-top: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            color: black;
+        }
+
+        .btn {
+            display: inline-block;
+            background: #B9D514;
+            color: black;
+            text-decoration: none;
+            padding: 12px 20px;
+            margin-top: 20px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .footer {
+            background-color: black;
+            color: white;
+            padding: 15px;
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+
+        .footer a {
+            color: #B9D514;
+            text-decoration: none;
+        }
+
+        @media screen and (max-width: 600px) {
+            .container {
+                width: 90%;
+            }
+            .order-item img {
+                width: 60px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Header with Logo -->
+    <div class="header">
+        <img src="https://res.cloudinary.com/dtivafy25/image/upload/v1724395923/Group_76_wynoom.png" alt="Maalana Logo">
+    </div>
+
+    <!-- Personalized Message -->
+    <div class="content">
+        <h2>Thank you for your order, {{USER_NAME}}! 🎉</h2>
+        <p>Your order <strong>#{{ORDER_ID}}</strong> has been successfully placed.</p>
+        <p>Here are your order details:</p>
+    </div>
+
+    <!-- Ordered Items -->
+    <div class="order-details">
+        {{ORDER_ITEMS}}
+    </div>
+
+    <div class="summary">
+        <p>Total Amount: ₹{{TOTAL_AMOUNT}}</p>
+        <p>Payment Method: {{PAYMENT_METHOD}}</p>
+    </div>
+
+    <a href="https://maalana.com/orders" class="btn">View Your Order</a>
+
+    <!-- Footer -->
+    <div class="footer">
+        &copy; {{YEAR}} Maalana. All rights reserved.<br>
+        Need help? <a href="https://maalana.com/contact">Contact Support</a>
+    </div>
+</div>
+
+</body>
+</html>

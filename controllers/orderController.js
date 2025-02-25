@@ -8,6 +8,7 @@ const razorpay = new Razorpay({
     key_secret: process.env.RAZORPAY_KEY_SECRET
 });
 
+
 // ✅ Create Order API
 exports.createOrder = async (req, res) => {
     const { userId, paymentMethod } = req.body;
@@ -93,6 +94,7 @@ exports.createOrder = async (req, res) => {
         await newOrder.save();
         await Cart.deleteMany({ userId });
 
+        
         res.status(201).json({
             message: "Order placed successfully.",
             order: newOrder

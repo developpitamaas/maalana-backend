@@ -1,15 +1,30 @@
+const fs = require("fs");
+const path = require("path");
 const User = require("../models/User");
+const nodemailer = require("nodemailer");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const cloudinary = require("cloudinary").v2;
 require("dotenv").config();
 
+// Read Email Template
+const emailTemplatePath = path.join(__dirname, "../templates/welcomeEmail.html");
+const emailTemplate = fs.readFileSync(emailTemplatePath, "utf-8");
 
 // Configure Cloudinary
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
     api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// Nodemailer transporter setup
+const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+        user: 'sachingautam6239@gmail.com',
+        pass: 'nxajuvwkblihqind',
+    },
 });
 
 // Generate JWT Token
@@ -35,6 +50,21 @@ exports.signup = async (req, res) => {
         });
 
         const token = generateToken(user._id);
+        // Replace placeholders with actual values
+        const personalizedEmail = emailTemplate
+            .replace("{{USER_NAME}}", firstName)
+            .replace("{{YEAR}}", new Date().getFullYear());
+
+        // Send Welcome Email
+        const mailOptions = {
+            from: process.env.SMTP_USER,
+            to: email,
+            subject: "Welcome to Maalana!",
+            html: personalizedEmail,
+        };
+
+        await transporter.sendMail(mailOptions);
+
         res.status(201).json({ user, token });
     } catch (error) {
         res.status(500).json({ message: "Something went wrong", error: error.message });
@@ -44,7 +74,7 @@ exports.signup = async (req, res) => {
 // Login
 exports.login = async (req, res) => {
     const { email, password } = req.body;
-
+    console.log(email, password);
     try {
         const user = await User.findOne({ email });
         if (!user) return res.status(404).json({ message: "User not found" });
@@ -52,6 +82,7 @@ exports.login = async (req, res) => {
         if (!user.password) return res.status(400).json({ message: "This user uses Google Login" });
 
         const isPasswordCorrect = await bcrypt.compare(password, user.password);
+        console.log(isPasswordCorrect);
         if (!isPasswordCorrect) return res.status(400).json({ message: "Invalid credentials" });
 
         const token = generateToken(user._id);
@@ -163,3 +194,4 @@ exports.updateUserDetails = async (req, res) => {
         });
     }
 };
+

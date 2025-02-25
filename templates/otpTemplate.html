@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>OTP Verification - Maalana</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@300;400;700&display=swap');
+
+        body {
+            font-family: 'Comic Neue', cursive;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+        
+        .container {
+            max-width: 500px;
+            margin: 30px auto;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        
+        .header {
+            background-color: #B9D514;
+            padding: 20px;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+        }
+
+        .header img {
+            width: 180px; /* Adjust logo size */
+        }
+
+        .message {
+            font-size: 18px;
+            color: #333;
+            margin: 20px 0;
+        }
+
+        .otp-box {
+            font-size: 30px;
+            font-weight: bold;
+            color: #000;
+            background-color: #B9D514;
+            padding: 15px;
+            display: inline-block;
+            border-radius: 8px;
+            letter-spacing: 5px;
+            margin: 20px auto;
+        }
+
+        .note {
+            font-size: 16px;
+            color: #555;
+        }
+
+        .footer {
+            background-color: #000;
+            color: white;
+            font-size: 14px;
+            padding: 15px;
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .footer a {
+            color: #B9D514;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        /* Responsive Design */
+        @media screen and (max-width: 550px) {
+            .container {
+                width: 90%;
+                padding: 20px;
+            }
+
+            .otp-box {
+                font-size: 26px;
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <img src="https://res.cloudinary.com/dtivafy25/image/upload/v1724395923/Group_76_wynoom.png" alt="Maalana Logo">
+    </div>
+
+    <p class="message">Hello,</p>
+    <p class="message">Use the following OTP to verify your email with <strong>Maalana</strong>. This OTP is valid for only 5 minutes.</p>
+
+    <div class="otp-box">{{OTP_CODE}}</div>
+
+    <p class="note">If you did not request this, please ignore this email.</p>
+
+    <div class="footer">
+        &copy; 2025 Maalana. All rights reserved.<br>
+        Need help? <a href="https://maalana.com/contact">Contact Support</a>
+    </div>
+</div>
+
+</body>
+</html>
