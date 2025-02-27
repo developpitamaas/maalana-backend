@@ -135,7 +135,7 @@ exports.getUserDetails = async (req, res) => {
 
 exports.updateUserDetails = async (req, res) => {
     try {
-        const { userId, firstName, lastName, role, gender, email, phone, address, profileImage } = req.body;
+        const { userId, firstName, lastName, role, gender, email, phone, address, profileImage, dob } = req.body;
 
         // Validate required fields
         if (!userId) {
@@ -159,12 +159,22 @@ exports.updateUserDetails = async (req, res) => {
             uploadedImageUrl = uploadResponse.secure_url; // Cloudinary's secure URL
         }
 
+        // ✅ Handle DOB properly (convert to Date format)
+        let formattedDOB = user.dob; // Keep existing DOB if not updated
+        if (dob) {
+            formattedDOB = new Date(dob);
+            if (isNaN(formattedDOB)) {
+                return res.status(400).json({ message: "Invalid Date of Birth format" });
+            }
+        }
+
         // Update user details
         user.firstName = firstName || user.firstName;
         user.lastName = lastName || user.lastName;
         user.role = role || user.role;
         user.gender = gender || user.gender;
         user.email = email || user.email;
+        user.dob = formattedDOB;
         user.phone = phone || user.phone;
         user.profileImage = uploadedImageUrl; // Set Cloudinary URL
 
