@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Thank You for Joining Maalana</title>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            border-radius: 10px;
+            background: white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .header {
+            background: #B9D514;
+            padding: 20px;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+        }
+
+        .header img {
+            width: 150px;
+        }
+
+        .content {
+            padding: 20px;
+            font-size: 16px;
+            color: #333;
+            line-height: 1.5;
+        }
+
+        .btn {
+            display: inline-block;
+            background: #B9D514;
+            color: black;
+            padding: 12px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        .footer {
+            background: black;
+            color: white;
+            padding: 15px;
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <img src="https://res.cloudinary.com/dtivafy25/image/upload/v1724395923/Group_76_wynoom.png" alt="Maalana Logo">
+        </div>
+
+        <!-- Email Content -->
+        <div class="content">
+            <h2>Thank You, {{firstName}}!</h2>
+            <p>We have received your request to join the Maalana Family.</p>
+            <p>Our team will review your details and get in touch with you soon.</p>
+            <p>If you have any questions, feel free to contact us.</p>
+
+            <!-- Call to Action -->
+            <a href="mailto:support@maalana.com" class="btn">Contact Support</a>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>📍 Maalana HQ, 1234 Market Street, India</p>
+            <p>📧 support@maalana.com | 📞 +91 9876543210</p>
+        </div>
+    </div>
+
+</body>
+</html>

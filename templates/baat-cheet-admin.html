@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Baat Cheet Submission</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background-color: #B9D514;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header img {
+            width: 150px;
+        }
+
+        .content {
+            padding: 20px;
+            text-align: center;
+        }
+
+        h2 {
+            color: #333;
+            font-size: 22px;
+            margin-bottom: 15px;
+        }
+
+        .details {
+            text-align: left;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .details strong {
+            color: #B9D514;
+        }
+
+        .message {
+            font-style: italic;
+            margin-top: 10px;
+            padding: 10px;
+            background: #f9f9f9;
+            border-left: 4px solid #B9D514;
+        }
+
+        .reply-btn {
+            display: block;
+            width: 200px;
+            text-align: center;
+            margin: 20px auto;
+            padding: 12px;
+            background-color: #B9D514;
+            color: #000;
+            font-weight: bold;
+            border-radius: 5px;
+            text-decoration: none;
+        }
+
+        .reply-btn:hover {
+            background-color: #9dbb10;
+        }
+
+        .icon {
+            margin-right: 10px;
+            color: #B9D514;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="https://res.cloudinary.com/dtivafy25/image/upload/v1724395923/Group_76_wynoom.png"
+                alt="Maalana Logo">
+        </div>
+
+        <div class="content">
+            <h2>New Baat Cheet Submission</h2>
+            <div class="details">
+                <p><i class="fa-solid fa-user icon"></i> <strong>Name:</strong> {{name}}</p>
+                <p><i class="fa-solid fa-phone icon"></i> <strong>Phone No:</strong> {{phone}}</p>
+                <p><i class="fa-solid fa-envelope icon"></i> <strong>Email:</strong> {{email}}</p>
+                <p><i class="fa-solid fa-comment icon"></i> <strong>Message:</strong></p>
+                <p class="message">{{message}}</p>
+            </div>
+
+            <!-- Reply Button -->
+            <a href="mailto:{{email}}" class="reply-btn">Reply to {{name}}</a>
+        </div>
+    </div>
+</body>
+
+</html>

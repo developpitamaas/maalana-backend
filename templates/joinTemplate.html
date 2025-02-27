@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>New Submission - Humko Join Karlo</title>
+
+    <!-- Import Poppins Font -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+        @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css');
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            border-radius: 10px;
+            background: white;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            padding: 20px;
+            background: #B9D514;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+        }
+
+        .header img {
+            width: 150px;
+        }
+
+        .content {
+            padding: 20px;
+            font-size: 16px;
+            color: #333;
+            line-height: 1.5;
+        }
+
+        .highlight {
+            font-weight: 600;
+            color: #B9D514;
+        }
+
+        .footer {
+            margin-top: 20px;
+            padding: 15px;
+            text-align: center;
+            background: black;
+            color: white;
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+        }
+
+        .social-icons {
+            margin: 10px 0;
+        }
+
+        .social-icons a {
+            margin: 0 10px;
+            display: inline-block;
+            color: #B9D514;
+            font-size: 24px;
+            transition: color 0.3s ease-in-out;
+        }
+
+        .social-icons a:hover {
+            color: white;
+        }
+
+        .contact-info {
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .btn {
+            display: block;
+            width: 200px;
+            text-align: center;
+            background: #B9D514;
+            color: black;
+            padding: 12px;
+            margin: 20px auto;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        .btn:hover {
+            background: #A2C112;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <!-- Maalana Logo -->
+        <div class="header">
+            <img src="https://res.cloudinary.com/dtivafy25/image/upload/v1724395923/Group_76_wynoom.png"
+                alt="Maalana Logo">
+        </div>
+
+        <!-- Email Content -->
+        <div class="content">
+            <h2 style="text-align: center;">New Submission - Humko Join Karlo</h2>
+
+            <p><strong>Name:</strong> <span class="highlight">{{firstName}} {{lastName}}</span></p>
+            <p><strong>Company Name:</strong> <span class="highlight">{{companyName}}</span></p>
+            <p><strong>Phone:</strong> <span class="highlight">{{phone}}</span></p>
+            <p><strong>Email:</strong> <span class="highlight">{{email}}</span></p>
+            <p><strong>Message:</strong></p>
+            <p>{{message}}</p>
+
+            <!-- Call to Action Button -->
+            <a href="mailto:{{email}}" class="btn">Reply to {{firstName}} {{lastName}}</a>
+        </div>
+
+        <!-- Footer with Contact Info & Social Media -->
+        <div class="footer">
+            <p>Contact Us:</p>
+            <p class="contact-info">📍 Maalana HQ, 1234 Market Street, India</p>
+            <p class="contact-info">📧 support@maalana.com | 📞 +91 9876543210</p>
+
+            <!-- Social Media Icons with Font Awesome -->
+            <div class="social-icons">
+                <a href="https://www.facebook.com/maalana" target="_blank">
+                    <i class="fa-brands fa-facebook"></i>
+                </a>
+                <a href="https://www.instagram.com/maalana" target="_blank">
+                    <i class="fa-brands fa-instagram"></i>
+                </a>
+                <a href="https://twitter.com/maalana" target="_blank">
+                    <i class="fa-brands fa-twitter"></i>
+                </a>
+                <a href="https://www.linkedin.com/company/maalana" target="_blank">
+                    <i class="fa-brands fa-linkedin"></i>
+                </a>
+            </div>
+
+            <p>© 2025 Maalana. All rights reserved.</p>
+        </div>
+    </div>
+
+</body>
+
+</html>

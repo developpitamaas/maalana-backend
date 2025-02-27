@@ -133,6 +133,18 @@ exports.verifyPayment = async (req, res) => {
 };
 
 
+// get all orders
+exports.getAllOrdersByAdmin = async (req, res) => {
+    try {
+        const orders = await Order.find();
+
+        res.status(200).json({ orders });
+    } catch (error) {
+        console.error("Error fetching orders:", error);
+        res.status(500).json({ message: "Internal Server Error", error: error.message });
+    }
+}
+
 exports.getAllOrders = async (req, res) => {
     const { userId } = req.query;
 

@@ -13,6 +13,9 @@ const dashboardRoutes = require("./routes/dashboardRoutes");
 const bannerRoutes = require("./routes/bannerRoutes");
 const billingRoutes = require("./routes/billingRoutes");
 const otpRoutes = require("./routes/otpRoutes");
+const couponRoutes = require("./routes/couponRoutes");
+const baatCheetRoutes = require("./routes/baatCheetRoutes");
+const humkoJoinKarloRoutes = require("./routes/humkoJoinKarloRoutes");
 
 dotenv.config();
 
@@ -39,6 +42,9 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/banners", bannerRoutes);
 app.use("/api/billing", billingRoutes);
 app.use("/api/otp", otpRoutes);
+app.use("/api/coupons", couponRoutes);
+app.use("/api/baat-cheet", baatCheetRoutes);
+app.use("/api/humko-join-karlo", humkoJoinKarloRoutes);
 
 const PORT = process.env.PORT || 5000;
 
