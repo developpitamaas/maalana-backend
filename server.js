@@ -16,6 +16,7 @@ const otpRoutes = require("./routes/otpRoutes");
 const couponRoutes = require("./routes/couponRoutes");
 const baatCheetRoutes = require("./routes/baatCheetRoutes");
 const humkoJoinKarloRoutes = require("./routes/humkoJoinKarloRoutes");
+const shippingRoutes = require("./routes/shippingRoutes");
 
 dotenv.config();
 
@@ -45,6 +46,7 @@ app.use("/api/otp", otpRoutes);
 app.use("/api/coupons", couponRoutes);
 app.use("/api/baat-cheet", baatCheetRoutes);
 app.use("/api/humko-join-karlo", humkoJoinKarloRoutes);
+app.use("/api/shipping", shippingRoutes);
 
 const PORT = process.env.PORT || 5000;
 
