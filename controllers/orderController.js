@@ -10,11 +10,109 @@ const razorpay = new Razorpay({
 
 
 // ✅ Create Order API
-exports.createOrder = async (req, res) => {
-    const { userId, paymentMethod } = req.body;
+// exports.createOrder = async (req, res) => {
+//     const { userId, paymentMethod } = req.body;
 
-    if (!userId || !paymentMethod) {
-        return res.status(400).json({ message: "User ID and payment method are required." });
+//     if (!userId || !paymentMethod) {
+//         return res.status(400).json({ message: "User ID and payment method are required." });
+//     }
+
+//     try {
+//         // 🛒 Fetch user's cart
+//         const cartItems = await Cart.find({ userId }).populate({
+//             path: "productId",
+//             model: Product,
+//             select: "name price images quantity"
+//         });
+
+//         if (cartItems.length === 0) {
+//             return res.status(400).json({ message: "Cart is empty." });
+//         }
+
+//         // 🛍️ Prepare order details & check stock availability
+//         let totalAmount = 0;
+//         const orderProducts = [];
+//         const outOfStockProducts = [];
+
+//         for (const item of cartItems) {
+//             const product = item.productId;
+//             const totalPrice = product.price * item.quantity;
+//             totalAmount += totalPrice;
+
+//             // ✅ Check if enough stock is available
+//             if (product.quantity < item.quantity) {
+//                 outOfStockProducts.push({ name: product.name, availableStock: product.quantity });
+//             } else {
+//                 orderProducts.push({
+//                     productId: product._id,
+//                     name: product.name,
+//                     price: product.price,
+//                     quantity: item.quantity,
+//                     image: product.images[0] || ""
+//                 });
+//             }
+//         }
+
+//         // ❌ If any product is out of stock, prevent order creation
+//         if (outOfStockProducts.length > 0) {
+//             return res.status(400).json({
+//                 message: "Some products are out of stock",
+//                 outOfStockProducts
+//             });
+//         }
+
+//         let newOrder = new Order({
+//             userId,
+//             products: orderProducts,
+//             totalAmount,
+//             paymentMethod,
+//             paymentStatus: paymentMethod === "COD" ? "Pending" : "Paid"
+//         });
+
+//         // 💰 If Razorpay, create a payment order
+//         if (paymentMethod === "Razorpay") {
+//             const shortReceipt = `ord_${userId.slice(-6)}_${Date.now().toString().slice(-6)}`;
+
+//             const razorpayOrder = await razorpay.orders.create({
+//                 amount: totalAmount * 100, // Amount in paise
+//                 currency: "INR",
+//                 receipt: shortReceipt
+//             });
+
+//             newOrder.razorpayOrderId = razorpayOrder.id;
+//             newOrder.paymentStatus = "Pending";
+//         }
+
+//         // ✅ Decrease product stock after order is placed
+//         for (const item of cartItems) {
+//             await Product.findByIdAndUpdate(item.productId._id, {
+//                 $inc: { quantity: -item.quantity }
+//             });
+//         }
+
+//         // 🎯 Save order & remove from cart
+//         await newOrder.save();
+//         await Cart.deleteMany({ userId });
+
+
+//         res.status(201).json({
+//             message: "Order placed successfully.",
+//             order: newOrder
+//         });
+//     } catch (error) {
+//         console.error("Error creating order:", error);
+//         res.status(500).json({ message: "Internal Server Error", error: error.message });
+//     }
+// };
+
+
+// ✅ Create Order API
+exports.createOrder = async (req, res) => {
+    const { userId, paymentMethod, shippingAddress, BillingAddress, userDetails } = req.body;
+
+    // ✅ Validate Required Fields
+    if (!userId || !paymentMethod || !shippingAddress || !BillingAddress || !userDetails) {
+        return res.status(400).json({ message: "User ID, payment method, shipping address, billing address, and user details are required." });
     }
 
     try {
@@ -61,12 +159,19 @@ exports.createOrder = async (req, res) => {
             });
         }
 
+        // 🆕 Generate Unique Order ID
+        const orderId = `ORD-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
+
         let newOrder = new Order({
             userId,
+            orderId,
             products: orderProducts,
             totalAmount,
             paymentMethod,
-            paymentStatus: paymentMethod === "COD" ? "Pending" : "Paid"
+            paymentStatus: paymentMethod === "Razorpay" ? "Paid" : "Pending",
+            shippingAddress,
+            BillingAddress,
+            userDetails
         });
 
         // 💰 If Razorpay, create a payment order
@@ -80,7 +185,7 @@ exports.createOrder = async (req, res) => {
             });
 
             newOrder.razorpayOrderId = razorpayOrder.id;
-            newOrder.paymentStatus = "Pending";
+            // newOrder.paymentStatus = "Pending";
         }
 
         // ✅ Decrease product stock after order is placed
@@ -90,11 +195,10 @@ exports.createOrder = async (req, res) => {
             });
         }
 
-        // 🎯 Save order & remove from cart
+        // ✅ Save order & remove items from cart
         await newOrder.save();
         await Cart.deleteMany({ userId });
 
-        
         res.status(201).json({
             message: "Order placed successfully.",
             order: newOrder
@@ -181,6 +285,31 @@ exports.getOrderById = async (req, res) => {
         res.status(200).json({ order });
     } catch (error) {
         console.error("Error fetching order:", error);
+        res.status(500).json({ message: "Internal Server Error", error: error.message });
+    }
+};
+
+// order cancel by user 
+exports.cancelOrder = async (req, res) => {
+    const { orderId } = req.params;
+
+    if (!orderId) {
+        return res.status(400).json({ message: "Order ID is required." });
+    }
+
+    try {
+        const order = await Order.findById(orderId);
+
+        if (!order) {
+            return res.status(404).json({ message: "Order not found." });
+        }
+
+        order.orderStatus = "Cancelled";
+        await order.save();
+
+        res.status(200).json({ message: "Order cancelled successfully.", order });
+    } catch (error) {
+        console.error("Error cancelling order:", error);
         res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };

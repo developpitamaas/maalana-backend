@@ -16,6 +16,7 @@ const orderSchema = new mongoose.Schema({
             image: String
         }
     ],
+    orderId: { type: String, unique: true, required: true, default: () => `${Math.floor(100000 + Math.random() * 900000)}` },
     totalAmount: { type: Number, required: true },
     paymentMethod: { type: String, enum: ["COD", "Razorpay"], required: true },
     paymentStatus: { type: String, enum: ["Pending", "Paid"], default: "Pending" },
@@ -37,7 +38,7 @@ const orderSchema = new mongoose.Schema({
     userDetails: {
         fullName: String,
         email: String,
-        phone: String, 
+        phone: String,
         image: String
     },
     shiprocketOrderId: { type: String, default: null },
