@@ -7,19 +7,20 @@ const Category = require("../models/Category");
 // ✅ Get Dashboard Metrics
 exports.getDashboardMetrics = async (req, res) => {
     try {
-        const totalSales = await Order.countDocuments({ paymentStatus: "Paid" }); // Count successful orders
+        const totalSales = await Order.countDocuments({ paymentMethod: "Razorpay" }); // Count successful orders
         const totalOrders = await Order.countDocuments(); // Count all orders
         const totalUsers = await User.countDocuments(); // Count registered users
 
         // ✅ Calculate Total Products (Sum of all product quantities)
         const totalProductsData = await Product.aggregate([
-            { $group: { _id: null, totalQuantity: { $sum: "$quantity" } } } // Sum quantity field
+            { $count: "totalProducts" } // Count the number of products
         ]);
-        const totalProducts = totalProductsData.length > 0 ? totalProductsData[0].totalQuantity : 0;
+
+        const totalProducts = totalProductsData.length > 0 ? totalProductsData[0].totalProducts : 0;
 
         // ✅ Calculate Total Revenue
         const totalRevenueData = await Order.aggregate([
-            { $match: { paymentStatus: "Paid" } }, // Only count successful payments
+            { $match: { paymentMethod: "Razorpay" } }, // Only count successful payments
             { $group: { _id: null, totalRevenue: { $sum: "$totalAmount" } } } // Sum totalAmount field
         ]);
         const totalRevenue = totalRevenueData.length > 0 ? totalRevenueData[0].totalRevenue : 0;
@@ -109,11 +110,12 @@ exports.getRecentOrders = async (req, res) => {
 
         // Format data
         const formattedOrders = recentOrders.map(order => ({
-            orderId: order._id,
+            id: order._id,
+            orderId: order.orderId,
             customer: order.userId, // Change this if you populate user data
             date: order.createdAt,
             items: order.products,
-            paymentStatus: order.paymentStatus || "Pending",
+            paymentMethod: order.paymentMethod || "Pending",
             status: order.orderStatus || "Processing"
         }));
 
