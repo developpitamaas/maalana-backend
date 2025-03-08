@@ -17,6 +17,7 @@ const couponRoutes = require("./routes/couponRoutes");
 const baatCheetRoutes = require("./routes/baatCheetRoutes");
 const humkoJoinKarloRoutes = require("./routes/humkoJoinKarloRoutes");
 const shippingRoutes = require("./routes/shippingRoutes");
+const invoiceRoutes = require("./routes/invoiceRoutes");
 
 dotenv.config();
 
@@ -47,8 +48,9 @@ app.use("/api/coupons", couponRoutes);
 app.use("/api/baat-cheet", baatCheetRoutes);
 app.use("/api/humko-join-karlo", humkoJoinKarloRoutes);
 app.use("/api/shipping", shippingRoutes);
+app.use("/api/invoice", invoiceRoutes);
 
-const PORT = process.env.PORT || 8002;
+const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
