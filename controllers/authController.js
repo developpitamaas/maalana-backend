@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const User = require("../models/User");
 const nodemailer = require("nodemailer");
-const bcrypt = require("bcrypt");
+const bcrypt = require('bcrypt');
 const jwt = require("jsonwebtoken");
 const cloudinary = require("cloudinary").v2;
 require("dotenv").config();
